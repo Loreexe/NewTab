@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getProfileName() {
-      return (localStorage.getItem("profile_name") || "Lorenzo").trim() || "Lorenzo";
+      return (localStorage.getItem("profile_name") || "Utente").trim() || "Utente";
     }
 
     function getSystemInstruction() {

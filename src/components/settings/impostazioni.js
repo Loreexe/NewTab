@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const urlObj = new URL(link.url);
             return `https://www.google.com/s2/favicons?sz=64&domain=${urlObj.hostname}`;
         } catch (e) {
-            return 'images/default-icon.png';
+            return 'images/icon128.png';
         }
     }
 
@@ -947,7 +947,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const profileNameInput = document.getElementById('settings-profile-name');
         if (profileNameInput) {
             profileNameInput.value = localStorage.getItem('profile_name') || '';
-            profileNameInput.placeholder = 'es. Lorenzo';
+            profileNameInput.placeholder = 'es. Mario';
         }
 
         if (chatKeyInput) {
