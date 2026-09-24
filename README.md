@@ -6,16 +6,17 @@ Una dashboard personale e altamente personalizzabile per la pagina "Nuova Scheda
 
 ## 🚀 Funzionalità Principali
 
-*   **💬 Chat AI Integrata:** Interagisci con qualsiasi modello compatibile con OpenAI (OpenAI, OpenRouter, DeepSeek, Groq, Ollama, LM Studio) direttamente dalla nuova scheda (endpoint personalizzabile, nome profilo configurabile, cronologia limitata a 40 turni, output Markdown sanificato).
+*   **💬 Chat AI Integrata:** Interagisci con qualsiasi modello compatibile con OpenAI (OpenAI, Google Gemini, DeepSeek, OpenRouter, Groq, Ollama) o con un endpoint personalizzato (es. LM Studio) direttamente dalla nuova scheda (nome profilo configurabile, cronologia limitata a 40 turni, output Markdown sanificato).
 *   **🎵 Riproduttore Spotify:** Controlla la musica via PKCE + `chrome.identity` (richiede Client ID + Redirect URI).
 *   **📅 Google Calendar:** Viste giorno/settimana/mese, tooltip, creazione eventi, multi-calendario.
-*   **☀️ Widget Meteo:** Previsioni OpenWeatherMap con cache offline 1h e gestione errori/timeout.
+*   **☀️ Widget Meteo:** Previsioni OpenWeatherMap con cache 30 minuti, fallback offline fino a 24h e gestione errori/timeout.
 *   **📈 Mercati Finanziari:** Azioni (Yahoo Finance, sparkline reali) e crypto (CoinGecko), cache 5min, mai dati inventati (N/D + badge cache).
 *   **🍅 Timer Pomodoro:** Focus/pause configurabili con anello progressivo e beep sintetizzato.
 *   **⏳ Conti alla Rovescia:** Countdown multipli con ticker live.
+*   **✅ To-do:** Lista attività con riordino drag&drop e sidebar ridimensionabile.
 *   **🖥️ Monitor di Sistema:** CPU/RAM via `chrome.system` + batteria via Battery API cachata (poll 2s).
 *   **📐 Convertitore Unità:** Lunghezza, peso, temperatura, volume.
-*   **🔗 Link Rapidi:** Categorie drag&drop, icone auto via favicon/ottimizzate 128px.
+*   **🔗 Link Rapidi:** Categorie drag&drop, icone automatiche via favicon o caricate localmente (ottimizzate a 96px).
 *   **🔍 Barra di Ricerca:** Google/Bing/DuckDuckGo/Brave/Ecosia/Yahoo + toggle Perplexity AI.
 *   **📰 Notizie RSS:** Feed personalizzabili via rss2json con timeout 15s e cache 24h.
 *   **🦖 Dino Game + Tab IFrame:** Colonna centrale a carosello con tab personalizzate (sandboxed, senza bypass CSP).
@@ -46,10 +47,10 @@ Per abilitare tutte le funzionalità avanzate, clicca sull'icona dell'ingranaggi
 
 *   **Chat AI (OpenAI Compatibile):** Endpoint API personalizzabile (default: `https://api.openai.com/v1`) e API key per OpenAI o qualsiasi provider compatibile (DeepSeek, OpenRouter, Groq, Ollama locale, ecc.).
 *   **OpenWeatherMap API Key:** Richiesta per le previsioni meteo. Registrati su [OpenWeatherMap](https://openweathermap.org/) per ottenere una chiave gratuita.
-*   **Spotify Client ID:** Necessario per il widget Spotify. Registra un'applicazione sul [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) e inserisci il Client ID (assicurati di impostare l'URI di reindirizzamento corretto indicato nelle istensioni di Spotify).
+*   **Spotify Client ID:** Necessario per il widget Spotify. Registra un'applicazione sul [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) e inserisci il Client ID (assicurati di impostare l'URI di reindirizzamento corretto indicato nelle istruzioni di Spotify).
 *   **Google Client ID:** Richiesto per Google Calendar. Vedi sezione sotto per `redirect_uri_mismatch`.
 
-*Nota: Nessuna chiave viene inviata a server esterni o memorizzata online; tutti i dati rimangono salvati localmente sul tuo browser tramite `localStorage`. L'export backup chiede se includere segreti (default consigliato: esclusi).*
+*Nota: Le chiavi vengono usate solo per le chiamate ai rispettivi servizi e non vengono mai memorizzate online: tutti i dati rimangono salvati localmente sul tuo browser tramite `localStorage`. L'export backup chiede se includere segreti (default consigliato: esclusi).*
 
 ---
 
@@ -65,7 +66,3 @@ Se vedi `Errore 400: redirect_uri_mismatch ... redirect_uri=https://<ID>.chromiu
 6. Nota unpacked: senza `key` nel manifest l'ID cambia per ogni PC/installazione — ripeti la registrazione o pinna una `key` stabile. Per Spotify fai lo stesso in [Spotify Dashboard](https://developer.spotify.com/dashboard) -> Edit Settings -> Redirect URIs.
 
 ---
-
-## 📄 Licenza
-
-Questo progetto è distribuito sotto la licenza MIT. Consulta il file `LICENSE` per ulteriori dettagli.
