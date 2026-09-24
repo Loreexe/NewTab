@@ -66,3 +66,13 @@ Se vedi `Errore 400: redirect_uri_mismatch ... redirect_uri=https://<ID>.chromiu
 6. Nota unpacked: senza `key` nel manifest l'ID cambia per ogni PC/installazione — ripeti la registrazione o pinna una `key` stabile. Per Spotify fai lo stesso in [Spotify Dashboard](https://developer.spotify.com/dashboard) -> Edit Settings -> Redirect URIs.
 
 ---
+
+## 📄 Licenza
+
+Questo progetto è distribuito sotto la licenza **GNU General Public License v3.0 (GPL-3.0)**. Consulta il file `LICENSE` per il testo integrale.
+
+Copyright (c) 2026 Lorenzo Geraci
+
+In sintesi: sei libero di usare, modificare e redistribuire questo software, ma ogni opera derivata deve essere rilasciata sotto la stessa licenza GPL v3, con il relativo codice sorgente.
+
+---
