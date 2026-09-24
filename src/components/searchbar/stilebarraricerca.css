@@ -1,0 +1,128 @@
+.time-date {
+    font-size: 2em; /* Font leggermente più grande */
+    color: white
+  }
+
+/* Stile dell'header */
+.header {
+    grid-column: 1 / 4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: rgb(28, 28, 28);
+    border: none;
+    border-radius: 16px;
+  }
+
+.search-bar {
+  position: relative;
+  flex-grow: 1; /* Occupa lo spazio rimanente */
+  margin: 0 2%; /* Spaziatura attorno alla barra */
+  display: flex;
+  align-items: center; /* Allineamento verticale degli elementi */
+}
+
+.search-bar input {
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(4vh + 20px);
+  padding: 10px calc(6vh + 36px) 10px 54px;
+  border: none;
+  border-radius: 50px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  font-size: 1.5em;
+  transition: background 0.2s ease;
+}
+.search-bar input:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+.search-bar input:focus,
+.search-bar input:focus-visible {
+  outline: none;
+  background: rgba(255, 255, 255, 0.13);
+}
+
+/* Stile per il logo del motore di ricerca */
+.engine-logo {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+  width: 22px;
+  height: 22px;
+  transition: opacity 0.15s ease;
+}
+
+.engine-logo.fade-out {
+  opacity: 0;
+}
+
+/* Effetto scavato/monocromatico */
+.engine-logo svg {
+  width: 100%;
+  height: 100%;
+  fill: rgba(0, 0, 0, 0.35); /* Tonalità scura interna */
+  filter: 
+    drop-shadow(0px -1px 0px rgba(0, 0, 0, 0.7)) /* Ombra interna superiore */
+    drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.12)); /* Luce inferiore */
+  transition: fill 0.3s ease, filter 0.3s ease;
+}
+
+/* Reazioni interattive all'input */
+.search-bar input:hover ~ .engine-logo svg {
+  fill: rgba(0, 0, 0, 0.45);
+  filter: 
+    drop-shadow(0px -1px 0px rgba(0, 0, 0, 0.8)) 
+    drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.16));
+}
+
+.search-bar input:focus ~ .engine-logo svg {
+  fill: rgba(0, 0, 0, 0.55);
+  filter: 
+    drop-shadow(0px -1.5px 0.5px rgba(0, 0, 0, 0.9)) 
+    drop-shadow(0px 1px 1px rgba(255, 255, 255, 0.2));
+}
+
+/* Stile attivazione/disattivazione AI */
+#engine-toggle {
+  display: none;
+}
+.switch {
+  position: absolute;
+  right: 6px; /* Gap di 6px a destra */
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(6vh + 20px); /* Larghezza totale equivalente all'originale */
+  height: calc(4vh + 8px); /* Altezza totale calcolata per avere esattamente 6px di gap (top/bottom) */
+  padding: 0 10px; /* Padding orizzontale, la centratura verticale è gestita dal flexbox */
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50px; /* Arrotondamento per curve concentriche perfette */
+  z-index: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: white;
+  font-size: 0.9em;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-sizing: border-box;
+}
+.switch svg path {
+  fill: white;
+}
+#engine-toggle:checked + .switch {
+  background-color: rgb(37, 76, 205);
+  box-shadow: 0px 0px 40px rgba(0, 98, 255, 0.438);
+}

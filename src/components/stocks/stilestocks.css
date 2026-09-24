@@ -1,0 +1,179 @@
+.stocks-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.stocks-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 6px;
+}
+
+.stocks-form-panel {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  animation: slideDown 0.3s ease;
+}
+
+.stocks-form-panel input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: white;
+  padding: 6px;
+  font-size: 12px;
+  box-sizing: border-box;
+  text-transform: uppercase;
+}
+
+.stocks-form-panel input:focus {
+  border-color: #1DB954;
+  outline: none;
+}
+
+.stocks-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.stocks-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.stock-item {
+  position: relative;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.stock-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-1px);
+}
+
+.stock-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 40%;
+}
+
+.stock-sym {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.stock-name {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: left;
+}
+
+/* Sparkline Chart */
+.stock-chart {
+  width: 50px;
+  height: 20px;
+  margin: 0 8px;
+}
+
+.sparkline-path {
+  fill: none;
+  stroke: #1DB954;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.stock-item.negative .sparkline-path {
+  stroke: #ff4444;
+}
+
+.stock-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  min-width: 30%;
+}
+
+.stock-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  font-family: monospace;
+}
+
+.stock-change {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(29, 185, 84, 0.1);
+  color: #1DB954;
+  margin-top: 2px;
+}
+
+.stock-item.negative .stock-change {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff4444;
+}
+
+.stock-delete-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  font-size: 9px;
+  padding: 2px;
+  margin-left: 6px;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.stock-item:hover .stock-delete-btn {
+  opacity: 1;
+}
+
+.stock-delete-btn:hover {
+  color: #ff4444;
+}

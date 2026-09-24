@@ -1,0 +1,302 @@
+/* Footer & Spotify Player Styles */
+
+/* Spotify Connect Button */
+.spotify-connect-btn {
+  background-color: #1db954;
+  color: white;
+  border: none;
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.spotify-connect-btn:hover {
+  background-color: #1ed760;
+  transform: scale(1.04);
+  box-shadow: 0 6px 16px rgba(29, 185, 84, 0.45);
+}
+
+.spotify-connect-btn:active {
+  transform: scale(0.98);
+}
+
+/* Spotify Player Dock/Bar (Full width, sits inside the grid's footer) */
+.footer {
+  grid-column: 1 / 4; /* Occupy full width of main container grid */
+  width: 100%;
+  height: 48px; /* Fixed height for the grid row */
+  position: relative; /* Anchor for absolute positioned player */
+}
+
+.music-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px; /* Default thin height */
+  padding: 0 20px;
+  border-radius: 16px;
+  background: rgba(25, 25, 25, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* Hover State: Expands upwards to overlap the content above it */
+.music-player:hover {
+  height: 80px;
+  background: rgba(18, 18, 18, 0.85); /* Slightly darker for readability */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(29, 185, 84, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* Left Section: Track Info */
+.track-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 120px;
+  max-width: 25%;
+}
+
+.track-info img {
+  width: 34px;
+  height: 34px;
+  border-radius: 4px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.music-player:hover .track-info img {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.track-info .info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.track-info .info p {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#nomecanzone {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.music-player:hover #nomecanzone {
+  font-size: 13.5px;
+}
+
+#cantante {
+  font-size: 10px;
+  color: #b3b3b3;
+  margin-top: 1px !important;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.music-player:hover #cantante {
+  font-size: 11px;
+  margin-top: 3px !important;
+}
+
+/* Center Section: Playback Controls & Progress Bar */
+.player-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 2;
+  margin: 0 15px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.controls {
+  display: flex; /* Always flex layout */
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 0; /* 0 height when collapsed */
+  opacity: 0; /* Invisible when collapsed */
+  overflow: hidden; /* Prevent text/icon rendering when height is 0 */
+  margin-bottom: 0;
+  transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              margin-bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.music-player:hover .controls {
+  height: 32px; /* Expands to full size on hover */
+  opacity: 1;
+  margin-bottom: 4px;
+}
+
+.controls button {
+  background: none;
+  border: none;
+  color: #b3b3b3;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#pulsanteplay {
+  color: #ffffff !important;
+  font-size: 24px;
+}
+
+#pulsanteplay:hover {
+  color: #1DB954 !important;
+  transform: scale(1.1);
+}
+
+.controls button:hover {
+  color: #ffffff;
+  transform: scale(1.15);
+}
+
+/* Horizontal Progress Bar Row */
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+.progress {
+  height: 100%;
+  background-color: #1db954;
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.progress-bar:hover .progress {
+  background-color: #1ed760;
+}
+
+.progress-bar:hover {
+  height: 6px;
+  margin-top: -1px;
+  margin-bottom: -1px;
+}
+
+#currentTime, #duration {
+  display: inline-block; /* Always visible */
+  font-size: 10.5px;
+  color: #a7a7a7;
+  font-family: monospace;
+  min-width: 30px;
+  text-align: center;
+}
+
+/* Right Section: Volume & Device indicators (Hidden by default but occupies space for centering) */
+.player-right {
+  display: flex; 
+  justify-content: flex-end;
+  align-items: center;
+  flex: 1;
+  min-width: 120px;
+  max-width: 25%;
+  opacity: 0; /* Hidden by default */
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.music-player:hover .player-right {
+  opacity: 1; /* Visible on hover */
+  pointer-events: auto;
+}
+
+.volume-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#volume-icon {
+  font-size: 13px;
+  color: #b3b3b3;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+#volume-icon:hover {
+  color: #ffffff;
+}
+
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.volume-slider:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  transition: background 0.15s, transform 0.15s;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  background: #1DB954;
+  transform: scale(1.15);
+}

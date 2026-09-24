@@ -1,0 +1,130 @@
+#weather {
+  padding: 4px;
+  background: transparent;
+  border: 0px;
+  text-align: center;
+  margin: 0 auto;
+  height: auto;
+  width: 95%;
+  overflow: hidden;
+}
+
+.current-weather {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.current-weather h2 {
+  font-size: 1.1rem;
+  margin: 0 0 2px 0;
+  text-align: left;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.current-weather .temp {
+  font-size: 2rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ffffff;
+}
+
+.current-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.current-weather .details {
+  text-align: right;
+}
+
+.current-weather .details p {
+  margin: 1px 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.hourly {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 0;
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hour {
+  text-align: center;
+  flex: 1;
+  font-size: 0.75rem;
+}
+
+.hour p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hour img {
+  width: 24px;
+  height: 24px;
+  margin: 2px auto;
+  display: block;
+}
+
+.daily {
+  margin-top: 6px;
+}
+
+.day-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.8rem;
+}
+
+.day-row:last-child {
+  border-bottom: none;
+}
+
+.day-row span {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.day-row img {
+  width: 20px;
+  height: 20px;
+}
+
+.day-row .temps {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  width: 90px;
+}
+
+.day-row .temps span {
+  font-size: 0.75rem;
+  min-width: 22px;
+  text-align: right;
+}
+
+.bar {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 0 2px;
+}
+
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(to right, #a1a1a1, #ffffff);
+}

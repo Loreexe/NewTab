@@ -1,0 +1,159 @@
+.sysmonitor-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.sysmonitor-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 6px;
+}
+
+.sysmonitor-config-panel {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  animation: slideDown 0.3s ease;
+}
+
+.config-checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  text-align: left;
+}
+
+.config-checkbox-group label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.config-checkbox-group input {
+  cursor: pointer;
+}
+
+/* Griglia per i cerchi del monitor di sistema */
+.sysmonitor-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.metric-circle-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 8px;
+  box-sizing: border-box;
+  transition: transform 0.2s, background-color 0.2s;
+  position: relative;
+}
+
+.metric-circle-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-1px);
+}
+
+.metric-circle-gauge {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 6px;
+}
+
+.metric-circle-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.metric-circle-ring .ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.04);
+  stroke-width: 4.5;
+}
+
+.metric-circle-ring .ring-progress {
+  fill: none;
+  stroke: #1DB954; /* Spotify Green */
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-dasharray: 151; /* Circ = 2 * PI * r (r=24) */
+  stroke-dashoffset: 151;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s;
+}
+
+/* Colori accento basati sullo stato */
+.metric-circle-ring .ring-progress.warning {
+  stroke: #ffaa00; /* Arancione */
+}
+
+.metric-circle-ring .ring-progress.critical {
+  stroke: #ff4444; /* Rosso */
+}
+
+.metric-circle-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  user-select: none;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.metric-circle-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.metric-circle-name {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.metric-circle-val {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: monospace;
+  color: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  white-space: nowrap;
+}

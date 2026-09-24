@@ -1,0 +1,234 @@
+/* Imposta lo stile generale del body */
+body {
+  margin: 0;
+  height: 100vh;
+  height: 100dvh;
+  box-sizing: border-box;
+  padding: 10px;
+  font-family: Arial, sans-serif; /* Font usato per l'intera pagina */
+  background: #171717;
+  color: white; /* Colore del testo */
+  display: grid;
+  grid-template-rows: auto 1fr auto; /* Riga per header, contenuto e footer */
+  gap: 10px; /* Spaziatura tra le sezioni */
+  overflow: hidden; /* Impedisce lo scrolling */
+}
+
+/* Quando Spotify è disattivato, nasconde il footer e regola le righe del grid */
+body.spotify-disabled {
+  grid-template-rows: auto 1fr;
+}
+body.spotify-disabled footer {
+  display: none !important;
+}
+
+
+/* Stile del contenuto principale */
+.main {
+  grid-column: 1 / 4; /* Occupa tutta la larghezza disponibile */
+  display: flex;
+  flex-direction: row;
+  column-gap: 10px; /* Spazietto tra le colonne attive */
+  height: 100%;
+  min-height: 0;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.centro {
+  height: 100%;
+  flex-grow: 1; /* Occupa lo spazio rimanente */
+  flex-shrink: 1; /* Permette il restringimento */
+  min-width: 200px;
+  border-radius: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: rgba(25, 25, 25, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: row;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.sidebar-left, .sidebar-right {
+  width: 20%;
+  flex-shrink: 0; /* Impedisce che si rimpicciolisca sotto la larghezza impostata */
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  gap: 10px;
+  display: grid;
+  grid-template-rows: auto;
+  grid-template-columns: repeat(1, 1fr);
+  border-radius: 16px;
+  box-sizing: border-box;
+  background: rgba(25, 25, 25, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  padding: 10px 10px; /* Spaziatura interna */
+}
+
+.sezioni_laterali {
+  background: rgba(255, 255, 255, 0.03); /* Vetro leggermente più chiaro per evidenziare lo stacco */
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  padding: 10px;
+  margin-bottom: 0px;
+  justify-content: space-between;
+  align-items: stretch;
+  border-radius: 12px; /* Angoli arrotondati per le sotto-sezioni */
+  text-align: center; /* Centra il testo */
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+/* Stile della barra di trascinamento per il ridimensionamento delle colonne */
+.resizer {
+  width: 10px;
+  margin-left: -5px;
+  margin-right: -5px;
+  cursor: col-resize;
+  background: transparent;
+  align-self: stretch;
+  position: relative;
+  z-index: 10;
+  transition: background-color 0.2s;
+}
+
+/* Linea indicatrice centrale del resizer */
+.resizer::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 100%;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.resizer:hover::after,
+.resizer.active::after {
+  background-color: #1DB954; /* Colore verde Spotify per l'accento */
+}
+
+.resizer:hover,
+.resizer.active {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.sidebar-right-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  text-align: center;
+}
+
+/* Stile della barra di trascinamento verticale per i widget nella barra sinistra */
+.resizer-v {
+  height: 8px;
+  cursor: row-resize;
+  background: transparent;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.resizer-v::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
+  height: 2px;
+  background-color: transparent;
+  transition: background-color 0.2s;
+}
+
+.resizer-v:hover::after,
+.resizer-v.active::after {
+  background-color: #1DB954;
+}
+
+.resizer-v:hover,
+.resizer-v.active {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Layout flex per colonna sinistra quando ci sono più widget attivi */
+.sidebar-left.has-both-widgets {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: auto !important;
+}
+
+/* Stile per il segnaposto "Aggiungi Widget" */
+.add-widget-placeholder {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.01);
+  box-sizing: border-box;
+}
+
+.add-widget-placeholder:hover {
+  border-color: #1DB954; /* Verde Spotify per accento */
+  background: rgba(29, 185, 84, 0.05);
+  transform: scale(0.98);
+}
+
+.add-widget-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.3s ease;
+}
+
+.add-widget-placeholder:hover .add-widget-content {
+  color: #1DB954;
+}
+
+.add-widget-icon {
+  font-size: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.add-widget-placeholder:hover .add-widget-icon {
+  background: rgba(29, 185, 84, 0.15);
+}
+
+.add-widget-text {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Spinner di rotazione globale */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+

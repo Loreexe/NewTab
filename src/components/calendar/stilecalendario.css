@@ -1,0 +1,1136 @@
+/* ==========================================================================
+   To-Do Sidebar Styling (Preserved from old stylesheet to maintain functionality)
+   ========================================================================== */
+.sidebarcalendario {
+    display: flex;
+    flex-direction: row;
+    width: 220px; /* Larghezza fissa ancora più compatta quando è aperta */
+    background-color: rgba(0, 0, 0, 0.15);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    color: white;
+    flex-shrink: 0; /* Impedisce il restringimento forzato del widget dei To-Do */
+}
+
+.sidebarcalendario.open {
+    width: 28px;
+}
+
+/* Nasconde il resizer quando il To-Do è collassato */
+.sidebarcalendario.open + #resizer-todo {
+    display: none;
+}
+
+/* Resizer centrale tra To-Do e Calendario */
+.resizer-todo {
+    width: 10px;
+    cursor: col-resize;
+    background: transparent;
+    align-self: stretch;
+    position: relative;
+    z-index: 10;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.resizer-todo::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+
+.resizer-todo:hover::after,
+.resizer-todo.active::after {
+    background-color: #1DB954; /* Colore verde Spotify */
+}
+
+.resizer-todo:hover,
+.resizer-todo.active {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.toggle-btn {
+    width: 28px;
+    height: 100%;
+    padding-left: 10px;
+    background-color: #4caf4f00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 100;
+}
+
+/* ==========================================================================
+   Main Calendar Outer Container
+   ========================================================================== */
+.calendar { 
+    flex: 1;
+    margin-bottom: 15px;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    border-radius: 0 16px 16px 0;
+    min-width: 0; /* Permette al calendario di restringersi fluidamente in flexbox */
+}
+
+/* ==========================================================================
+   Autenticazione / Connection Overlay
+   ========================================================================== */
+.calendar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(18, 18, 18, 0.85);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99;
+    padding: 20px;
+    text-align: center;
+}
+
+.calendar-login-box {
+    max-width: 420px;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.calendar-login-box h2 {
+    margin-top: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 12px;
+}
+
+.calendar-login-box p {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.calendar-connect-btn {
+    background: #4285F4;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+}
+
+.calendar-connect-btn:hover {
+    background: #357ae8;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(66, 133, 244, 0.6);
+}
+
+/* ==========================================================================
+   Calendar Application Container
+   ========================================================================== */
+.calendar-app {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* Dropdown per i calendari */
+.calendar-dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+.calendars-dropdown-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    color: white;
+    padding: 5px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendars-dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.calendar-dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 5px;
+    background: #202020;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 100;
+    min-width: 180px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.calendar-dropdown-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.calendar-dropdown-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.calendar-list-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+    user-select: none;
+    transition: color 0.2s;
+    white-space: nowrap;
+}
+
+.calendar-list-item:hover {
+    color: #ffffff;
+}
+
+.calendar-list-item input[type="checkbox"] {
+    display: none;
+}
+
+.custom-checkbox {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.calendar-list-item input[type="checkbox"]:checked + .custom-checkbox {
+    border-color: transparent;
+}
+
+.calendar-list-item input[type="checkbox"]:checked + .custom-checkbox::after {
+    content: "✓";
+    font-size: 10px;
+    color: white;
+    font-weight: bold;
+}
+
+/* Calendar Main Section */
+.calendar-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* ==========================================================================
+   Header & Controls
+   ========================================================================== */
+.calendar-main-header {
+    display: flex;
+    flex-wrap: wrap; /* Consente ai controlli di andare a capo per sbloccare il ridimensionamento */
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px; /* Più compatto */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(25, 25, 25, 0.3);
+    flex-shrink: 0;
+    gap: 8px;
+}
+
+.calendar-nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nav-arrow {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1;
+    padding-bottom: 3px;
+}
+
+.nav-arrow:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.today-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    color: white;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.today-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.toggle-sidebar-btn {
+    background: none;
+    border: none;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 6px;
+    color: rgba(255, 255, 255, 0.6);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.toggle-sidebar-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.calendar-period-title {
+    margin: 0;
+    font-size: 0.95rem; /* Più compatto per evitare sovrapposizioni su schermi piccoli */
+    font-weight: 600;
+    color: #ffffff;
+    text-align: center;
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Sliding Tab View Selector */
+.calendar-view-selector-container {
+    display: flex;
+    align-items: center;
+}
+
+.calendar-view-selector {
+    display: flex;
+    position: relative;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.view-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 4px 10px; /* Più compatto */
+    border-radius: 18px;
+    font-size: 0.72rem; /* Più compatto */
+    font-weight: 500;
+    cursor: pointer;
+    z-index: 2;
+    transition: color 0.3s ease;
+}
+
+.view-btn:hover {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.view-btn.active {
+    color: #ffffff;
+}
+
+.view-slider-bg {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    bottom: 2px;
+    width: calc(33.33% - 2.6px);
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.calendar-app[data-view="day"] .view-slider-bg {
+    transform: translateX(0);
+}
+
+.calendar-app[data-view="week"] .view-slider-bg {
+    transform: translateX(100%);
+}
+
+.calendar-app[data-view="month"] .view-slider-bg {
+    transform: translateX(200%);
+}
+
+/* Add Event Button */
+.add-event-btn {
+    background: #1DB954; /* Spotify Green for Actions */
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(29, 185, 84, 0.3);
+}
+
+.add-event-btn:hover {
+    background: #1ed760;
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.5);
+}
+
+/* ==========================================================================
+   Views Container & Shared View Grid Layouts
+   ========================================================================== */
+.calendar-view-container {
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Scroll area for day/week columns */
+.calendar-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+    min-width: 0; /* Rimossa larghezza minima rigida per consentire la contrazione libera del calendario */
+}
+
+.calendar-scroll-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.calendar-scroll-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+}
+
+/* Time Grid Structure */
+.calendar-time-grid {
+    position: relative;
+    display: grid;
+    /* Columns template is dynamically toggled in JS for day vs week views */
+}
+
+.time-label-column {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    width: 50px;
+}
+
+.time-label {
+    height: 40px; /* Set height for each hour column to 40px for compactness */
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: right;
+    padding-right: 8px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    transform: translateY(-6px);
+}
+
+/* Grid Columns Section */
+.grid-columns-container {
+    position: absolute;
+    top: 0;
+    left: 50px;
+    right: 0;
+    bottom: 0;
+    display: grid;
+}
+
+.grid-column {
+    position: relative;
+    height: 100%;
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 40px;
+}
+
+.grid-column:last-child {
+    border-right: none;
+}
+
+.grid-column.today-column {
+    background-color: rgba(66, 133, 244, 0.02);
+}
+
+/* Current time indicator line */
+.current-time-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #ff4444;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.current-time-indicator::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    top: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff4444;
+}
+
+/* Sticky all-day events rows */
+.week-all-day-row, .day-all-day-row {
+    display: grid;
+    background: rgba(20, 20, 20, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2px 0;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.week-all-day-row {
+    row-gap: 2px;
+}
+
+.all-day-empty-cell {
+    width: 50px;
+    flex-shrink: 0;
+}
+
+.all-day-day-cell {
+    position: relative;
+    padding: 2px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+/* ==========================================================================
+   Week View Headers (Sticky Above Scroll Area)
+   ========================================================================== */
+.week-view-header-row {
+    display: grid;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(20, 20, 20, 0.2);
+    flex-shrink: 0;
+    min-width: 0; /* Allineato */
+}
+
+.header-empty-cell {
+    width: 50px;
+    flex-shrink: 0;
+}
+
+.day-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.day-name {
+    font-size: 0.68rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.day-number {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-top: 2px;
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    border-radius: 50%;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.day-header.today .day-number {
+    background: #4285F4;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(66, 133, 244, 0.4);
+}
+
+.day-header.today .day-name {
+    color: #4285F4;
+    font-weight: 600;
+}
+
+/* ==========================================================================
+   Event Pills (Day & Week View)
+   ========================================================================== */
+.event-pill {
+    position: absolute;
+    left: 4px;
+    right: 4px;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 0.74rem;
+    color: white;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
+    border-left: 3px solid transparent;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    overflow: visible; /* Cambiato da hidden per permettere al tooltip di uscire dal pill */
+    background: rgba(66, 133, 244, 0.15);
+    border-left-color: #4285F4;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.event-pill:hover {
+    transform: scale(1.02);
+    z-index: 50;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    filter: brightness(1.2);
+}
+
+.event-pill-title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-pill-time {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.65);
+    margin-top: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Event Hover Tooltip
+   ========================================================================== */
+.event-tooltip {
+    position: fixed; /* fixed sul body, non clippato da nessun parent */
+    z-index: 99999;
+    width: 264px;
+    background: rgba(20, 20, 24, 0.95);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(0.93) translateY(6px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.event-tooltip.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.event-tooltip-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.event-tooltip-dot {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 3px;
+}
+
+.event-tooltip-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.event-tooltip-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.event-tooltip-icon {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.event-tooltip-desc {
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.55);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    padding-top: 7px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 80px;
+    overflow-y: auto;
+}
+
+/* ==========================================================================
+   Month View Grid
+   ========================================================================== */
+.month-view-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    min-width: 0; /* Allineato */
+}
+
+.month-view-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-rows: auto repeat(6, 1fr);
+    flex: 1;
+    height: 100%;
+}
+
+.month-header-cell {
+    text-align: center;
+    padding: 8px 0;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(20, 20, 20, 0.1);
+}
+
+.month-day-cell {
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 4px;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.2s;
+}
+
+.month-day-cell:nth-child(7n) {
+    border-right: none;
+}
+
+.month-day-cell:hover {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.month-day-cell.other-month {
+    opacity: 0.25;
+}
+
+.month-day-cell.today-cell {
+    background-color: rgba(66, 133, 244, 0.02);
+}
+
+.month-day-number-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2px;
+}
+
+.month-day-number {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 50%;
+}
+
+.month-day-cell.today-cell .month-day-number {
+    background: #4285F4;
+    color: #ffffff;
+    box-shadow: 0 1px 4px rgba(66, 133, 244, 0.4);
+}
+
+.month-events-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.month-events-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+.month-event-pill {
+    font-size: 0.65rem;
+    padding: 1px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    color: white;
+    border-left: 2px solid transparent;
+    background: rgba(66, 133, 244, 0.15);
+    border-left-color: #4285F4;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: all 0.1s ease;
+}
+
+.month-event-pill:hover {
+    transform: scale(1.02);
+    filter: brightness(1.2);
+}
+
+/* ==========================================================================
+   Modale per inserimento / visualizzazione eventi
+   ========================================================================== */
+.event-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 10, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 105;
+}
+
+.event-modal-content {
+    background-color: #202020;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 380px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    color: #ffffff;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    color: #888888;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.event-close-btn:hover {
+    color: #ffffff;
+}
+
+.event-modal-content h3 {
+    margin-top: 0;
+    margin-bottom: 18px;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    text-align: left;
+}
+
+.form-group label {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+}
+
+.form-group input, .form-group textarea {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #404040;
+    background-color: #2c2c2c;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    font-family: inherit;
+}
+
+.form-group input:focus, .form-group textarea:focus {
+    border-color: #4285F4;
+}
+
+.form-group-row {
+    display: flex;
+    gap: 10px;
+}
+
+.form-group-row .form-group {
+    flex: 1;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-cancel {
+    padding: 8px 16px;
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-save {
+    padding: 8px 20px;
+    background-color: #1DB954;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.btn-save:hover {
+    background-color: #1ed760;
+}
+
+/* ==========================================================================
+   Stili Selettore Calendario e Modale Dettagli / Eliminazione
+   ========================================================================== */
+.event-calendar-select {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #404040;
+    background-color: #2c2c2c;
+    color: #ffffff;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s ease;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.event-calendar-select:focus {
+    border-color: #4285F4;
+}
+
+.event-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding-right: 20px;
+}
+
+.event-detail-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-color: #1DB954;
+}
+
+.event-detail-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.event-detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.event-detail-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.event-detail-text {
+    color: rgba(255, 255, 255, 0.9);
+    word-break: break-word;
+}
+
+.btn-delete {
+    padding: 8px 18px;
+    background-color: rgba(233, 20, 41, 0.15);
+    color: #ff5263;
+    border: 1px solid rgba(233, 20, 41, 0.35);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+    background-color: #e91429;
+    color: white;
+    border-color: #e91429;
+}
+
+.btn-delete.confirm-delete {
+    background-color: #e91429;
+    color: #ffffff;
+    border-color: #ff5263;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(233, 20, 41, 0.5);
+}
+
+.calendar-dropdown-divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    margin: 6px 0;
+}
+
+.calendar-dropdown-action-btn {
+    width: 100%;
+    padding: 6px 10px;
+    font-size: 0.72rem;
+    color: #4285F4;
+    background: transparent;
+    border: 1px dashed rgba(66, 133, 244, 0.4);
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s ease;
+    margin-top: 4px;
+}
+
+.calendar-dropdown-action-btn:hover {
+    background: rgba(66, 133, 244, 0.15);
+    border-color: #4285F4;
+}
+
+.calendar-dropdown-action-btn.disconnect {
+    color: #e91429;
+    border-color: rgba(233, 20, 41, 0.4);
+}
+
+.calendar-dropdown-action-btn.disconnect:hover {
+    background: rgba(233, 20, 41, 0.15);
+    border-color: #e91429;
+}

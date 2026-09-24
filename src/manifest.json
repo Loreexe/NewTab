@@ -1,0 +1,49 @@
+{
+    "manifest_version": 3,
+    "name": "Custom New Tab",
+    "version": "1.1.1",
+    "description": "Personalizza la nuova scheda del tuo browser",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxWQb24ZHZhITaqs+CBXFRHKlGIA23/7NTNqJ6bRqYLHnXtUnXJCIqGIHMmC/1cEuMP6+VusPAHBT4FNL8auca8NQT23XLF/99FMqiljwhl2SKYTNJYEMF/lmONZZyBDxl+Ozi2VsT6pMu86kTmbmQOmqhyacWdyZYdqCW3EY4g9IQ/FsIessCr3b1Qkd50YA0iprBQS/iX+phcsda4352WRPg8i0YupZvdgTrsNygjxbOf+1EjQw9VBKj/jef93ylgn/8JBnN2yL7lyPNZR/K8dCBMxbOCbvNVRIkZLI8ccPjMUyV+k08PntPHpA8+XH6ghYhFz7jS18Yot7bMQn0wIDAQAB",
+
+    "permissions": [
+    "identity",
+    "storage",
+    "system.cpu",
+    "system.memory"
+  ],
+  "host_permissions": [
+    "<all_urls>",
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.deepseek.com/*",
+    "https://openrouter.ai/*",
+    "https://api.groq.com/*",
+    "https://api.coingecko.com/*",
+    "https://query1.finance.yahoo.com/*",
+    "https://accounts.spotify.com/*",
+    "https://api.spotify.com/*",
+    "https://api.openweathermap.org/*",
+    "https://www.googleapis.com/*",
+    "https://api.rss2json.com/*"
+  ],
+
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+
+  "action": {
+    "default_icon": {
+      "16": "images/icon16.png",
+      "32": "images/icon32.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "images/icon16.png",
+    "32": "images/icon32.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  }
+}

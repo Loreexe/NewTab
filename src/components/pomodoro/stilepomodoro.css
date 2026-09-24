@@ -1,0 +1,368 @@
+/* ============================================================
+   POMODORO – Design ispirato alla reference card
+   Palette: dark glassmorphism (#171717) + accent verde #1DB954
+   ============================================================ */
+
+/* ── Container principale ─────────────────────────────────── */
+.pomodoro-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 6px 6px 10px;
+  box-sizing: border-box;
+  gap: 0;
+  justify-content: center;
+}
+
+/* ── Header (titolo + gear) ───────────────────────────────── */
+.pomodoro-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 8px;
+}
+
+/* ── Pulsante ingranaggio / + ─────────────────────────────── */
+.widget-gear-btn,
+.widget-plus-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  transition: all 0.25s ease;
+}
+
+.widget-gear-btn:hover {
+  color: #1DB954;
+  background: rgba(29, 185, 84, 0.12);
+  border-color: rgba(29, 185, 84, 0.3);
+  transform: rotate(45deg);
+}
+
+.widget-plus-btn:hover {
+  color: #1DB954;
+  background: rgba(29, 185, 84, 0.12);
+  border-color: rgba(29, 185, 84, 0.3);
+  transform: scale(1.1);
+}
+
+/* ── Pannello configurazione (slide-down) ─────────────────── */
+.pomodoro-config-panel {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-sizing: border-box;
+  animation: slideDown 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px) scaleY(0.95); }
+  to   { opacity: 1; transform: translateY(0)   scaleY(1); }
+}
+
+/* Riga impostazione – stile lista pulito come reference */
+.config-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.config-row:last-of-type {
+  border-bottom: none;
+}
+
+/* Label testo a sinistra */
+.config-row label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: default;
+}
+
+/* Valore + input a destra */
+.config-row .config-value {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.config-row input {
+  width: 36px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0;
+  color: white;
+  padding: 2px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  transition: border-color 0.2s;
+  -moz-appearance: textfield;
+}
+
+.config-row input::-webkit-inner-spin-button,
+.config-row input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.config-row input:focus {
+  border-bottom-color: #1DB954;
+  outline: none;
+}
+
+.config-row .config-unit {
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Pulsanti salva / cancella (condivisi con altri widget) ── */
+.pomodoro-btn-save,
+.countdown-btn-save,
+.sysmonitor-btn-save,
+.stocks-btn-save,
+.countdown-btn-cancel,
+.stocks-btn-cancel {
+  background: #1DB954;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.pomodoro-btn-save:hover,
+.countdown-btn-save:hover,
+.sysmonitor-btn-save:hover,
+.stocks-btn-save:hover {
+  background: #1ed760;
+  transform: translateY(-1px);
+}
+
+.countdown-btn-cancel,
+.stocks-btn-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.countdown-btn-cancel:hover,
+.stocks-btn-cancel:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* ── Icona modalità – SVG minimalista ────────────────────── */
+.pomodoro-mode-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.45);
+  transition: color 0.4s ease;
+}
+
+.pomodoro-mode-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* ── Cerchio SVG ──────────────────────────────────────────── */
+.pomodoro-display {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 4px 0 6px;
+  flex-shrink: 0;
+}
+
+.pomodoro-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+/* Traccia di sfondo */
+.ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 7;
+}
+
+/* Anello di progresso */
+.ring-progress {
+  fill: none;
+  stroke: #1DB954;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 390;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              stroke 0.4s ease;
+  filter: drop-shadow(0 0 6px rgba(29, 185, 84, 0.5));
+}
+
+/* Colori per le varie modalita */
+.ring-progress.mode-work  { stroke: #1DB954; filter: drop-shadow(0 0 6px rgba(29, 185, 84, 0.55)); }
+.ring-progress.mode-short { stroke: #3b9eff; filter: drop-shadow(0 0 6px rgba(59, 158, 255, 0.55)); }
+.ring-progress.mode-long  { stroke: #b066f5; filter: drop-shadow(0 0 6px rgba(176, 102, 245, 0.55)); }
+
+/* Testo del timer al centro */
+.pomodoro-time-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+  transition: color 0.3s;
+}
+
+/* ── Etichetta modalita + puntini sessione ────────────────── */
+.pomodoro-mode-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+/* Puntini indicatori sessione */
+.pomodoro-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.pomodoro-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  transition: background 0.3s, transform 0.2s;
+}
+
+.pomodoro-dot.active {
+  background: #1DB954;
+  transform: scale(1.2);
+  box-shadow: 0 0 5px rgba(29, 185, 84, 0.6);
+}
+
+/* ── Barra controlli: [reset]  [ START / PAUSA ]  [gear] ─── */
+.pomodoro-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Pulsante centrale play/pausa – stile pill largo */
+.pomodoro-ctrl-btn {
+  flex: 1;
+  max-width: 110px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 9px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.pomodoro-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Pulsante Start – accento verde */
+.pomodoro-ctrl-btn#pomodoro-start {
+  background: rgba(29, 185, 84, 0.12);
+  border-color: rgba(29, 185, 84, 0.35);
+  color: #1DB954;
+  box-shadow: 0 0 12px rgba(29, 185, 84, 0.12);
+}
+
+.pomodoro-ctrl-btn#pomodoro-start:hover {
+  background: rgba(29, 185, 84, 0.22);
+  border-color: rgba(29, 185, 84, 0.5);
+  box-shadow: 0 0 18px rgba(29, 185, 84, 0.22);
+}
+
+/* Pulsante Reset – cerchio icona perfetto */
+.pomodoro-ctrl-btn#pomodoro-reset {
+  flex: 0 0 36px;
+  padding: 0;
+  max-width: 36px;
+  min-width: 36px;
+  width: 36px;
+  height: 36px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1;
+}
+
+.pomodoro-ctrl-btn#pomodoro-reset:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+}

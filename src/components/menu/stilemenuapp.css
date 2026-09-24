@@ -1,0 +1,492 @@
+.apps {
+    display: grid;
+    grid-template-columns: repeat(2,auto); /* Griglia di due colonne */
+    margin-top: 2px;
+    gap: 10px; /* Spaziatura tra le app */
+
+  }
+
+  .app {
+    background-color: #50505000; /* Sfondo di ogni app */
+    padding: 7px; /* Spaziatura interna */
+    border-radius: 10px; /* Angoli arrotondati */
+    text-align: center; /* Centra il testo */
+  }
+  .app img{
+    width: 50%;
+  }
+
+  .app:hover img {
+    transform: scale(1.5);
+  }
+
+  /* Non-Edit Category Header with Toggle Button */
+  .category-header-non-edit {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .category-header-non-edit h2 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: left;
+    flex-grow: 1;
+  }
+
+  .edit-mode-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+  }
+
+  .edit-mode-btn:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: scale(1.1);
+  }
+
+  .edit-mode-btn.active {
+    color: #1DB954;
+    background-color: rgba(29, 185, 84, 0.1);
+  }
+
+  /* Edit Mode Category & Links layout overrides */
+  .sidebar-right-category-wrapper {
+    margin-bottom: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .sidebar-right-category-wrapper.dragging-cat {
+    opacity: 0.2;
+    border: 2px dashed rgba(29, 185, 84, 0.5);
+    border-radius: 14px;
+    transform: scale(0.98);
+  }
+
+  .category-header.edit-state {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 12px;
+    cursor: grab;
+    user-select: none;
+    transition: all 0.2s ease;
+  }
+
+  .category-header.edit-state:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .category-header.edit-state:active {
+    cursor: grabbing;
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(0.99);
+  }
+
+  .category-drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: grab;
+  }
+
+  .category-title-edit {
+    flex-grow: 1;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #e6e6e6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .category-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .category-action-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .category-action-btn svg {
+    display: block;
+  }
+
+  .category-action-btn.edit {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .category-action-btn.edit:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+
+  .category-action-btn.delete {
+    color: #ff3b30;
+    background: rgba(255, 59, 48, 0.08);
+    border: 1px solid rgba(255, 59, 48, 0.15);
+  }
+
+  .category-action-btn.delete:hover {
+    color: white;
+    background: #ff3b30;
+    border-color: #ff3b30;
+    transform: scale(1.15);
+    box-shadow: 1px 1px 3px rgba(255, 59, 48, 0.15),
+                3px 3px 6px rgba(255, 59, 48, 0.15),
+                6px 6px 12px rgba(255, 59, 48, 0.15);
+  }
+
+  /* Link Edit Mode Wobbling Elements */
+  @keyframes editWobble {
+    0% { transform: rotate(-0.5deg) scale(0.96); }
+    50% { transform: rotate(0.5deg) scale(0.96); }
+    100% { transform: rotate(-0.5deg) scale(0.96); }
+  }
+
+  .app.edit-state {
+    position: relative;
+    cursor: grab;
+    border: 1.5px dashed rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.01);
+    border-radius: 12px;
+    animation: editWobble 0.26s ease-in-out infinite;
+    transform-origin: center;
+    transition: border-color 0.2s, background-color 0.2s;
+  }
+
+  .app.edit-state:nth-child(even) {
+    animation-duration: 0.32s;
+    animation-direction: reverse;
+  }
+
+  .app.edit-state:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  .app.edit-state:active {
+    cursor: grabbing;
+  }
+
+  .app.edit-state.dragging {
+    opacity: 0.1;
+    border-color: #1DB954;
+    animation: none;
+    transform: scale(0.85);
+  }
+
+  .app-action-btn {
+    position: absolute;
+    border: none;
+    border-radius: 8px; /* Squircle design */
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  }
+
+  .app-action-btn svg {
+    display: block;
+  }
+
+  .app-action-btn.delete {
+    top: -8px;
+    right: -8px;
+    background-color: rgba(255, 59, 48, 0.12);
+    color: #ff3b30;
+    border: 1.5px solid #ffffff; /* Pop divider */
+  }
+
+  .app-action-btn.delete:hover {
+    background-color: #ff3b30;
+    color: white;
+    transform: scale(1.2);
+    box-shadow: 1px 1px 3px rgba(255, 59, 48, 0.2),
+                3px 3px 6px rgba(255, 59, 48, 0.2),
+                6px 6px 12px rgba(255, 59, 48, 0.2);
+  }
+
+  .app-action-btn.edit {
+    top: -8px;
+    left: -8px;
+    background-color: #2c2c2c;
+    color: #eeeeee;
+    border: 1.5px solid #ffffff;
+  }
+
+  .app-action-btn.edit:hover {
+    background-color: #1DB954; /* green overlay */
+    color: white;
+    border-color: #1DB954;
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+  }
+
+  /* Placeholder Add Link */
+  .add-link-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px;
+  }
+
+  .add-link-btn-sidebar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px dashed rgba(255, 255, 255, 0.18);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.01);
+  }
+
+  .add-link-btn-sidebar svg {
+    transition: transform 0.25s ease;
+  }
+
+  .add-link-btn-sidebar:hover {
+    border-color: #1DB954;
+    color: #1DB954;
+    transform: scale(1.08);
+    background-color: rgba(29, 185, 84, 0.08);
+    box-shadow: 0 0 12px rgba(29, 185, 84, 0.15);
+  }
+
+  .add-link-btn-sidebar:hover svg {
+    transform: rotate(90deg);
+  }
+
+  /* Placeholder Add Category */
+  .add-category-container {
+    margin-top: 30px;
+    text-align: center;
+    padding-bottom: 30px;
+  }
+
+  .add-category-btn-sidebar {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1.5px dashed rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
+  }
+
+  .add-category-btn-sidebar svg {
+    transition: transform 0.25s ease;
+  }
+
+  .add-category-btn-sidebar:hover {
+    background: rgba(29, 185, 84, 0.08);
+    border-color: #1DB954;
+    color: white;
+    box-shadow: 0 4px 15px rgba(29, 185, 84, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .add-category-btn-sidebar:hover svg {
+    transform: scale(1.2);
+  }
+
+  /* Edit Dialog Modal Styling Overrides */
+  .edit-dialog-modal-content {
+    max-width: 400px !important;
+    height: auto !important;
+    padding: 25px !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    border-radius: 14px !important;
+    background-color: #1e1e1e !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .edit-dialog-fields-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .dialog-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+  }
+
+  .dialog-field label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .dialog-input {
+    width: 100%;
+    padding: 10px;
+    background-color: #2b2b2b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+    outline: none;
+  }
+
+  .dialog-input:focus {
+    border-color: #1DB954;
+    background-color: #333333;
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 15px;
+    width: 100%;
+  }
+
+  .dialog-cancel-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ccc;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .dialog-cancel-btn:hover {
+    background: rgba(255, 255, 255, 0.10);
+    color: white;
+  }
+
+  .dialog-save-btn {
+    background: #1DB954;
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s ease;
+  }
+
+  .dialog-save-btn:hover {
+    background: #1ed760;
+  }
+
+  /* Custom Tooltips for Edit Mode Actions */
+  .tooltip {
+    position: relative;
+  }
+
+  .app-action-btn.tooltip {
+    position: absolute;
+  }
+
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    background-color: rgba(10, 10, 10, 0.95);
+    color: #ffffff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 10px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 130%; /* Align above the button */
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    opacity: 0;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(10, 10, 10, 0.95) transparent transparent transparent;
+  }
+
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+  }
+
+  /* File Loader Spinner */
+  .spin-icon {
+    animation: spin 0.8s linear infinite;
+  }

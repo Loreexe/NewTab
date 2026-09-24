@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="it-IT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nuova Scheda By Lore</title>
+    <link rel="stylesheet" href="shared/style.css"> <!-- Collega il CSS -->
+    <link rel="stylesheet" href="components/calendar/stilecalendario.css">
+    <link rel="stylesheet" href="components/searchbar/stilebarraricerca.css">
+    <link rel="stylesheet" href="components/meteo/stilemeteo.css">
+    <link rel="stylesheet" href="components/spotify/stilespotify.css">
+    <link rel="stylesheet" href="components/menu/stilemenuapp.css">
+    <link rel="stylesheet" href="components/todo/To-do.css">
+    <link rel="stylesheet" href="components/chat/Stilechat.css">
+    <link rel="stylesheet" href="components/settings/stileimpostazioni.css">
+    <link rel="stylesheet" href="components/pomodoro/stilepomodoro.css">
+    <link rel="stylesheet" href="components/countdown/stilecountdown.css">
+    <link rel="stylesheet" href="components/sysmonitor/stilesysmonitor.css">
+    <link rel="stylesheet" href="components/stocks/stilestocks.css">
+    <link rel="stylesheet" href="components/converter/stileconverter.css">
+    <link rel="stylesheet" href="components/central-tabs/stiletabs.css">
+    <link rel="icon" type="image/svg+xml" href="images/icon.svg">
+    <script src="shared/marked.min.js"></script>
+
+</head>
+<body>
+    <header class="header"><!--Barra di ricerca-->
+        <div id="clock" class="time-date"></div> <!-- Mostra l'orario e la data -->
+        
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Cerca...">
+            <div id="search-engine-logo" class="engine-logo"></div>
+            <input type="checkbox" id="engine-toggle" />   <!-- Pulsante Ai -->
+            <label for="engine-toggle" class="switch">Ai<svg class="slider" viewBox="0 0 512 512" height="1em" xmlns="http://www.w3.org/2000/svg"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V256c0 17.7 14.3 32 32 32s32-14.3 32-32V32zM143.5 120.6c13.6-11.3 15.4-31.5 4.1-45.1s-31.5-15.4-45.1-4.1C49.7 115.4 16 181.8 16 256c0 132.5 107.5 240 240 240s240-107.5 240-240c0-74.2-33.8-140.6-86.6-184.6c-13.6-11.3-33.8-9.4-45.1 4.1s-9.4 33.8 4.1 45.1c38.9 32.3 63.5 81 63.5 135.4c0 97.2-78.8 176-176 176s-176-78.8-176-176c0-54.4 24.7-103.1 63.5-135.4z"></path></svg></label>
+        </div>
+          <button id="settings-btn" class="settings-btn" title="Impostazioni">⚙️</button>
+    </header>
+    <main class="main">
+        <!--Lato sinistro-->
+        <aside class="sidebar-left" id="col-sinistra">
+            <!-- Aggiungi Widget Placeholder -->
+            <div id="add-widget-placeholder" class="add-widget-placeholder" style="display: none;">
+                <div class="add-widget-content">
+                    <span class="add-widget-icon">➕</span>
+                    <span class="add-widget-text">Aggiungi Widget</span>
+                </div>
+            </div>
+
+            <!--meteo-->
+            <div class="sezioni_laterali" id="weather-section">
+                <div id="weather">
+                    <div class="current-weather">
+                        <div>
+                            <h2>Palermo</h2>
+                            <div class="temp">29°</div>
+                        </div>
+                        <div class="details">
+                            <p>☀️ Clear sky</p>
+                            <p>↓ 21° ↑ 29°</p>
+                        </div>
+                    </div>
+
+                        <div class="hourly" id="hourly"></div>
+                        <div class="daily" id="daily"></div>
+                    </div>
+                </div>
+
+
+            <!--Chat Ai-->
+            <div class="sezioni_laterali" id="chat-section">
+                <div class="ai-chat-container">
+                    <div class="ai-chat-header">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" class="ai-chat-header-icon"><path d="M12 2L14.7 8.3L21 9.6L16.2 14L17.7 20.5L12 17L6.3 20.5L7.8 14L3 9.6L9.3 8.3L12 2Z"></path></svg>
+                            <span class="ai-chat-header-title">Assistente AI</span>
+                        </div>
+                        <div class="ai-chat-status">
+                            <span class="ai-chat-status-dot"></span>
+                            <span>Attivo</span>
+                        </div>
+                    </div>
+                    <div id="ai-chat-messages" class="ai-chat-messages"></div>
+                    <div class="ai-chat-input-area">
+                        <input id="ai-chat-input" class="ai-chat-input" type="text" placeholder="Scrivi un messaggio..." />
+                        <button class="ai-chat-button" id="ai-chat-send-btn" title="Invia">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="display: block;"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!--Timer Pomodoro-->
+            <div class="sezioni_laterali" id="pomodoro-section" style="display: none;">
+                <div class="pomodoro-container">
+                    <div class="pomodoro-header">
+                        <span>Timer Pomodoro</span>
+                        <button id="pomodoro-gear-btn" class="widget-gear-btn" title="Configura">⚙️</button>
+                    </div>
+                    
+                    <!-- Area Configurazione (inizialmente nascosta) -->
+                    <div id="pomodoro-config" class="pomodoro-config-panel" style="display: none;">
+                        <div class="config-row">
+                            <label>
+                                <span>Sessione Focus</span>
+                                <span class="config-value">
+                                    <input type="number" id="pomodoro-work-input" min="1" max="60" value="25">
+                                    <span class="config-unit">min</span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="config-row">
+                            <label>
+                                <span>Pausa Breve</span>
+                                <span class="config-value">
+                                    <input type="number" id="pomodoro-short-input" min="1" max="30" value="5">
+                                    <span class="config-unit">min</span>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="config-row">
+                            <label>
+                                <span>Pausa Lunga</span>
+                                <span class="config-value">
+                                    <input type="number" id="pomodoro-long-input" min="1" max="60" value="15">
+                                    <span class="config-unit">min</span>
+                                </span>
+                            </label>
+                        </div>
+                        <button id="pomodoro-save-config-btn" class="pomodoro-btn-save">Salva</button>
+                    </div>
+
+                    <!-- Icona modalità -->
+                    <div id="pomodoro-mode-icon" class="pomodoro-mode-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                    </div>
+
+                    <!-- Cerchio progressivo -->
+                    <div class="pomodoro-display">
+                        <svg class="pomodoro-ring" viewBox="0 0 140 140">
+                            <circle class="ring-bg" cx="70" cy="70" r="62"></circle>
+                            <circle id="pomodoro-ring-progress" class="ring-progress mode-work" cx="70" cy="70" r="62"></circle>
+                        </svg>
+                        <div id="pomodoro-time" class="pomodoro-time-text">25:00</div>
+                    </div>
+
+                    <!-- Etichetta modalità -->
+                    <div id="pomodoro-label" class="pomodoro-mode-label">Focus</div>
+
+                    <!-- Puntini sessione -->
+                    <div class="pomodoro-dots">
+                        <div class="pomodoro-dot active" data-dot="0"></div>
+                        <div class="pomodoro-dot" data-dot="1"></div>
+                        <div class="pomodoro-dot" data-dot="2"></div>
+                        <div class="pomodoro-dot" data-dot="3"></div>
+                    </div>
+
+                    <!-- Controlli: [↺ reset]  [START/PAUSA]  -->
+                    <div class="pomodoro-controls">
+                        <button id="pomodoro-reset" class="pomodoro-ctrl-btn" title="Reset">↺</button>
+                        <button id="pomodoro-start" class="pomodoro-ctrl-btn">Play</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!--Conti alla Rovescia-->
+            <div class="sezioni_laterali" id="countdown-section" style="display: none;">
+                <div class="countdown-container">
+                    <div class="countdown-header">
+                        <span>Conti alla Rovescia</span>
+                        <button id="countdown-add-btn" class="widget-plus-btn" title="Nuovo Countdown">+</button>
+                    </div>
+                    
+                    <div id="countdown-form" class="countdown-form-panel" style="display: none;">
+                        <input type="text" id="countdown-title-input" placeholder="Es. Esame Analisi 1" required>
+                        <input type="datetime-local" id="countdown-date-input" required>
+                        <div class="countdown-form-actions">
+                            <button id="countdown-cancel-form" class="countdown-btn-cancel">Annulla</button>
+                            <button id="countdown-save-form" class="countdown-btn-save">Salva</button>
+                        </div>
+                    </div>
+
+                    <div id="countdown-list" class="countdown-list">
+                        <!-- Generati dinamicamente da JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!--Monitor Sistema-->
+            <div class="sezioni_laterali" id="sysmonitor-section" style="display: none;">
+                <div class="sysmonitor-container">
+                    <div class="sysmonitor-header">
+                        <span>Monitor Sistema</span>
+                        <button id="sysmonitor-gear-btn" class="widget-gear-btn" title="Impostazioni Monitor">⚙️</button>
+                    </div>
+                    
+                    <!-- Pannello Scelte (mostra/nascondi indicatori) -->
+                    <div id="sysmonitor-config" class="sysmonitor-config-panel" style="display: none;">
+                        <div class="config-checkbox-group">
+                            <label><input type="checkbox" id="sys-show-cpu" checked> CPU</label>
+                            <label><input type="checkbox" id="sys-show-ram" checked> RAM</label>
+                            <label><input type="checkbox" id="sys-show-battery" checked> Batteria</label>
+                        </div>
+                        <button id="sysmonitor-save-config-btn" class="sysmonitor-btn-save">Salva</button>
+                    </div>
+
+                    <div id="sysmonitor-metrics" class="sysmonitor-metrics">
+                        <!-- Generati dinamicamente da JS in base alle preferenze -->
+                    </div>
+                </div>
+            </div>
+
+            <!--Prezzi Stocks & Crypto-->
+            <div class="sezioni_laterali" id="stocks-section" style="display: none;">
+                <div class="stocks-container">
+                    <div class="stocks-header">
+                        <span>Mercati Finanziari</span>
+                        <button id="stocks-add-btn" class="widget-plus-btn" title="Aggiungi Simbolo">+</button>
+                    </div>
+                    
+                    <div id="stocks-form" class="stocks-form-panel" style="display: none;">
+                        <input type="text" id="stocks-symbol-input" placeholder="Es. BTC, ETH, AAPL, TSLA" required>
+                        <div class="stocks-form-actions">
+                            <button id="stocks-cancel-form" class="stocks-btn-cancel">Annulla</button>
+                            <button id="stocks-save-form" class="stocks-btn-save">Aggiungi</button>
+                        </div>
+                    </div>
+
+                    <div id="stocks-list" class="stocks-list">
+                        <!-- Generati dinamicamente da JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!--Convertitore Unità-->
+            <div class="sezioni_laterali" id="converter-section" style="display: none;">
+                <div class="converter-container">
+                    <div class="converter-header">
+                        <span>Convertitore Unità</span>
+                    </div>
+                    <div class="converter-body">
+                        <div class="converter-row">
+                            <label for="converter-category">Categoria</label>
+                            <select id="converter-category" class="converter-select">
+                                <option value="length">Lunghezza</option>
+                                <option value="weight">Peso / Massa</option>
+                                <option value="temperature">Temperatura</option>
+                                <option value="volume">Volume</option>
+                            </select>
+                        </div>
+                        <div class="converter-grid">
+                            <div class="converter-column">
+                                <input type="number" id="converter-val-1" value="1">
+                                <select id="converter-unit-1" class="converter-select"></select>
+                            </div>
+                            <div class="converter-equal">=</div>
+                            <div class="converter-column">
+                                <input type="number" id="converter-val-2">
+                                <select id="converter-unit-2" class="converter-select"></select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Div di ridimensionamento sinistro -->
+        <div class="resizer" id="resizer-left"></div>
+
+        <!--Sezione centrale-->
+        <div class="centro">
+            <!--To-do-->
+            <div class="sidebarcalendario open" id="sidebar">
+                    <button class="toggle-btn" id="toggleButton">☰</button>
+                    <div class="todo-container">
+                        <h1>To-Do</h1>
+                        
+                        <form class="todo-form" id="todoForm">
+                            <input 
+                                type="text" 
+                                class="todo-input" 
+                                id="todoInput" 
+                                placeholder="Aggiungi un nuovo to-do..."
+                                required
+                            >
+                            <button type="submit" class="add-button">+</button>
+                        </form>
+                
+                        <ul class="todo-list" id="todoList">
+                            <!-- I todo verranno inseriti qui dinamicamente -->
+                        </ul>
+                        
+                        <div id="emptyMessage" class="empty-message">
+                            Nessun to-do. Aggiungine uno nuovo!
+                        </div>
+                    </div>
+            </div>
+            <!-- Resizer centrale tra To-Do e Calendario -->
+            <div id="resizer-todo" class="resizer-todo"></div>
+            <!--Calendario-->
+            <div class="calendar" id="calendar-container">
+                <!-- Fascia delle tab (pill-shape) -->
+                <div class="central-tabs-bar-wrapper" id="central-tabs-bar-wrapper" style="display: none;">
+                    <div class="central-tabs-list" id="central-tabs-list">
+                        <!-- Generato dinamicamente da JS -->
+                    </div>
+                </div>
+
+                <!-- Contenitori delle schermate con effetto carosello -->
+                <div class="central-tab-panels-outer">
+                    <div class="central-tab-panels-wrapper" id="central-tab-panels-wrapper">
+                        
+                        <!-- Schermata 1: Calendario -->
+                        <div class="central-tab-panel active" id="tab-panel-calendar">
+                            <!-- Interfaccia Calendario (Sempre attiva con supporto Locale + Google) -->
+                            <div id="calendar-app-container" class="calendar-app">
+                                <!-- Area Principale Calendario -->
+                                <div class="calendar-main">
+                                    <!-- Header del Calendario -->
+                                    <div class="calendar-main-header">
+                                        <div class="calendar-nav-controls">
+                                            <button id="calendar-prev-btn" class="nav-arrow" title="Precedente">‹</button>
+                                            <button id="calendar-today-btn" class="today-btn">Oggi</button>
+                                            <button id="calendar-next-btn" class="nav-arrow" title="Successivo">›</button>
+                                            <div class="calendar-dropdown-container">
+                                                <button id="calendar-toggle-dropdown" class="calendars-dropdown-btn">Calendari ▾</button>
+                                                <div id="calendar-dropdown-list" class="calendar-dropdown-content" style="display: none;">
+                                                    <!-- Checkboxes popolati dinamicamente -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <h2 id="calendar-title" class="calendar-period-title">Luglio 2026</h2>
+                                        <div class="calendar-view-selector-container">
+                                            <div class="calendar-view-selector">
+                                                <button class="view-btn" data-view="day">Giorno</button>
+                                                <button class="view-btn active" data-view="week">Settimana</button>
+                                                <button class="view-btn" data-view="month">Mese</button>
+                                                <div class="view-slider-bg"></div>
+                                            </div>
+                                        </div>
+                                        <button id="calendar-add-btn" class="add-event-btn" title="Nuovo Evento">+</button>
+                                    </div>
+
+                                    <!-- Griglia del Calendario -->
+                                    <div id="calendar-view-container" class="calendar-view-container">
+                                        <!-- Il contenuto del giorno, settimana o mese viene inserito qui -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schermata 2: Notizie (RSS) -->
+                        <div class="central-tab-panel" id="tab-panel-rss">
+                            <div class="rss-container">
+                                <div class="rss-header">
+                                    <select id="rss-feed-selector" class="rss-select">
+                                        <!-- Popolato dinamicamente da JS -->
+                                    </select>
+                                    <button id="rss-refresh-btn" class="rss-refresh-btn" title="Aggiorna">↻</button>
+                                </div>
+                                <div id="rss-news-list" class="rss-news-list">
+                                    <!-- Popolato dinamicamente da JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Schermata 3: Giochino Dino Runner -->
+                        <div class="central-tab-panel" id="tab-panel-game">
+                            <div class="game-container">
+                                <div class="dino-game-wrapper">
+                                    <div class="dino-header">
+                                        <div class="dino-title">
+                                            <span class="dino-icon">🦖</span> Chrome Dino
+                                        </div>
+                                        <div class="dino-scores">
+                                            <span class="dino-score-label">HI</span>
+                                            <span id="dino-highscore" class="dino-score-val">00000</span>
+                                            <span id="dino-score" class="dino-score-val">00000</span>
+                                        </div>
+                                    </div>
+                                    <div class="dino-canvas-container" id="dino-canvas-container">
+                                        <canvas id="dino-canvas"></canvas>
+                                        <div id="dino-overlay" class="dino-overlay">
+                                            <div class="dino-start-msg" id="dino-start-msg">
+                                                <div class="dino-big-icon">🦖</div>
+                                                <h3>CLICCA O PREMI SPAZIO</h3>
+                                                <p>Usa <kbd>Spazio</kbd> / <kbd>▲</kbd> per saltare, <kbd>▼</kbd> per abbassarti</p>
+                                                <button class="dino-btn" id="dino-start-btn">Gioca</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="dino-controls-hint">
+                                        <span><kbd>Spazio</kbd> / <kbd>▲</kbd> Salta</span>
+                                        <span><kbd>▼</kbd> Inchinati</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Modale per Nuovo Evento -->
+                <div id="event-modal" class="event-modal" style="display: none;">
+                    <div class="event-modal-content">
+                        <span id="event-modal-close" class="event-close-btn">&times;</span>
+                        <h3>Nuovo Evento</h3>
+                        <form id="event-form">
+                            <div class="form-group">
+                                <label for="event-title">Titolo</label>
+                                <input type="text" id="event-title" placeholder="Aggiungi titolo" required>
+                            </div>
+                            <div class="form-group-row">
+                                <div class="form-group">
+                                    <label for="event-start-date">Data Inizio</label>
+                                    <input type="date" id="event-start-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="event-start-time">Ora Inizio</label>
+                                    <input type="time" id="event-start-time" required>
+                                </div>
+                            </div>
+                            <div class="form-group-row">
+                                <div class="form-group">
+                                    <label for="event-end-date">Data Fine</label>
+                                    <input type="date" id="event-end-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="event-end-time">Ora Fine</label>
+                                    <input type="time" id="event-end-time" required>
+                                </div>
+                            </div>
+                            <div class="form-group" id="event-calendar-select-group">
+                                <label for="event-calendar-select">Calendario</label>
+                                <select id="event-calendar-select" class="event-calendar-select">
+                                    <!-- Popolato dinamicamente da JS: Calendario Personale o Google -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="event-desc">Descrizione (Opzionale)</label>
+                                <textarea id="event-desc" rows="3" placeholder="Aggiungi descrizione"></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" id="event-cancel-btn" class="btn-cancel">Annulla</button>
+                                <button type="submit" class="btn-save">Salva</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Modale per Dettagli ed Eliminazione Evento -->
+                <div id="event-detail-modal" class="event-modal" style="display: none;">
+                    <div class="event-modal-content">
+                        <span id="event-detail-close" class="event-close-btn">&times;</span>
+                        <div class="event-detail-header">
+                            <span id="event-detail-dot" class="event-detail-dot"></span>
+                            <h3 id="event-detail-title" style="margin: 0; word-break: break-word;">Dettagli Evento</h3>
+                        </div>
+                        <div class="event-detail-body">
+                            <div class="event-detail-row">
+                                <span class="event-detail-icon">📅</span>
+                                <span id="event-detail-date" class="event-detail-text"></span>
+                            </div>
+                            <div class="event-detail-row" id="event-detail-time-row">
+                                <span class="event-detail-icon">🕐</span>
+                                <span id="event-detail-time" class="event-detail-text"></span>
+                            </div>
+                            <div class="event-detail-row">
+                                <span class="event-detail-icon">📆</span>
+                                <span id="event-detail-calendar" class="event-detail-text"></span>
+                            </div>
+                            <div class="event-detail-row" id="event-detail-desc-row" style="display: none;">
+                                <span class="event-detail-icon">📝</span>
+                                <span id="event-detail-desc" class="event-detail-text"></span>
+                            </div>
+                        </div>
+                        <div class="form-actions" style="margin-top: 20px; justify-content: space-between;">
+                            <button type="button" id="event-delete-btn" class="btn-delete">Elimina evento</button>
+                            <button type="button" id="event-detail-close-btn" class="btn-cancel">Chiudi</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Div di ridimensionamento destro -->
+        <div class="resizer" id="resizer-right"></div>
+
+        <!--Lato Destro-->    
+        <aside class="sidebar-right" id="sidebar-right-container">
+            <!-- Categorie e link generati dinamicamente da JS -->
+        </aside>
+    </main>
+    <!--Spotify-->
+    <footer class="footer">
+        <div class="music-player">
+            <!-- UI quando Spotify NON è connesso -->
+            <div id="spotify-login-container" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                <button id="spotify-connect-btn" class="spotify-connect-btn">Connetti Spotify 🟢</button>
+            </div>
+
+            <!-- UI quando Spotify è connesso -->
+            <div id="spotify-player-content" style="display: none; align-items: center; justify-content: space-between; width: 100%; height: 100%;">
+                <!-- Sinistra: Info Brano -->
+                <div class="track-info">
+                    <img id="albumArt" src="images/spotify-logo.svg" alt="Album Art">
+                    <div class="info">
+                        <p id="nomecanzone">Caricamento...</p> 
+                        <p id="cantante"></p> 
+                    </div>
+                </div>
+
+                <!-- Centro: Controlli e Progresso -->
+                <div class="player-center">
+                    <div class="controls">
+                        <button id="canzoneprecedente" title="Precedente">⏮</button> 
+                        <button id="pulsanteplay" title="Play/Pause">▶</button> 
+                        <button id="prossimacanzone" title="Successivo">⏭</button> 
+                    </div>    
+
+                    <div class="progress-bar-container">
+                        <span id="currentTime">0:00</span>
+                        <div class="progress-bar" id="progress-bar-clickable">
+                            <div class="progress" id="progress"></div>
+                        </div>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Destra: Controlli Volume -->
+                <div class="player-right">
+                    <div class="volume-container">
+                        <span id="volume-icon" title="Muto/Attiva audio" style="cursor: pointer;">🔊</span>
+                        <input type="range" id="volume-slider" min="0" max="100" value="50" class="volume-slider" title="Volume">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modale Impostazioni -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="settings-close">&times;</span>
+            
+            <!-- Sidebar sinistra per menu verticale -->
+            <div class="settings-sidebar">
+                <h3>Impostazioni</h3>
+                <button class="tab-btn active" data-tab="tab-widgets">Widget Sinistra</button>
+                <button class="tab-btn" data-tab="tab-centro">Colonna Centrale</button>
+                <button class="tab-btn" data-tab="tab-spotify">Spotify</button>
+                <button class="tab-btn" data-tab="tab-calendar">Google Calendar</button>
+                <button class="tab-btn" data-tab="tab-searchbar">Barra di ricerca</button>
+                <button class="tab-btn" data-tab="tab-backup">Backup</button>
+            </div>
+            
+            <!-- Area contenuto a destra -->
+            <div class="settings-content-area">
+                <h2>Impostazioni Globali</h2>
+                
+                <!-- Contenuto Tab Widget Sinistra -->
+                <div id="tab-widgets" class="tab-content active">
+                    <div class="settings-group" style="margin-bottom: 25px;">
+                        <div class="switch-container">
+                            <span class="switch-label">Widget Meteo</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-weather-enabled">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div id="settings-weather-details" class="nested-settings">
+                            <div class="settings-group">
+                                <label for="settings-weather-key">OpenWeatherMap API Key</label>
+                                <input type="password" id="settings-weather-key" placeholder="Inserisci la chiave OpenWeatherMap">
+                            </div>
+                            
+                            <div class="settings-group-row">
+                                <div class="settings-group">
+                                    <label for="settings-weather-lat">Latitudine</label>
+                                    <input type="text" id="settings-weather-lat" placeholder="es. 38.100470">
+                                </div>
+                                <div class="settings-group">
+                                    <label for="settings-weather-lon">Longitudine</label>
+                                    <input type="text" id="settings-weather-lon" placeholder="es. 13.353646">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <div class="switch-container">
+                            <span class="switch-label">Widget Chat AI</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-chat-enabled">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        
+                        <div id="settings-chat-details" class="nested-settings">
+                            <div class="settings-group">
+                                <label for="settings-profile-name">Nome profilo (usato dalla chat AI)</label>
+                                <input type="text" id="settings-profile-name" placeholder="es. Lorenzo" maxlength="30">
+                            </div>
+                            <div class="settings-group">
+                                <label for="settings-chat-provider">Provider AI</label>
+                                <select id="settings-chat-provider" class="settings-select">
+                                    <option value="openai">OpenAI (ChatGPT)</option>
+                                    <option value="gemini">Google Gemini (OpenAI compatibile)</option>
+                                    <option value="deepseek">DeepSeek</option>
+                                    <option value="openrouter">OpenRouter</option>
+                                    <option value="groq">Groq</option>
+                                    <option value="ollama">Ollama (Locale: localhost:11434)</option>
+                                    <option value="custom">Personalizzato</option>
+                                </select>
+                            </div>
+                            <div class="settings-group">
+                                <label for="settings-chat-endpoint">Endpoint API (OpenAI compatibile)</label>
+                                <input type="text" id="settings-chat-endpoint" placeholder="https://api.openai.com/v1">
+                            </div>
+                            <div class="settings-group">
+                                <label for="settings-chat-key">API Key</label>
+                                <input type="password" id="settings-chat-key" placeholder="Inserisci la chiave API (es. sk-... o AIzaSy...)">
+                            </div>
+                            
+                            <div class="settings-group">
+                                <label for="settings-chat-model">Modello</label>
+                                <input type="text" id="settings-chat-model" placeholder="es. gpt-4o-mini" class="settings-input" list="chat-models-datalist">
+                                <datalist id="chat-models-datalist">
+                                    <option value="gpt-4o-mini">
+                                    <option value="gpt-4o">
+                                    <option value="gemini-2.0-flash">
+                                    <option value="gemini-1.5-flash">
+                                    <option value="deepseek-chat">
+                                    <option value="deepseek-reasoner">
+                                    <option value="llama-3.3-70b-versatile">
+                                </datalist>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widget Timer Pomodoro -->
+                    <div class="settings-group" style="margin-top: 25px;">
+                        <div class="switch-container">
+                            <span class="switch-label">Timer Pomodoro</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-pomodoro-enabled">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Widget Conti alla Rovescia -->
+                    <div class="settings-group" style="margin-top: 25px;">
+                        <div class="switch-container">
+                            <span class="switch-label">Conti alla Rovescia</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-countdown-enabled">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Widget Monitor Sistema -->
+                    <div class="settings-group" style="margin-top: 25px;">
+                        <div class="switch-container">
+                            <span class="switch-label">Monitor Sistema</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-sysmonitor-enabled">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Widget Prezzi Stocks -->
+                    <div class="settings-group" style="margin-top: 25px;">
+                        <div class="switch-container">
+                            <span class="switch-label">Prezzi Stocks & Crypto</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-stocks-enabled">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Widget Convertitore Unità -->
+                    <div class="settings-group" style="margin-top: 25px; margin-bottom: 25px;">
+                        <div class="switch-container">
+                            <span class="switch-label">Convertitore Unità</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-converter-enabled">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenuto Tab Spotify -->
+                <div id="tab-spotify" class="tab-content">
+                    <div class="switch-container">
+                        <span class="switch-label">Attiva Spotify</span>
+                        <label class="switch-input-wrapper">
+                            <input type="checkbox" id="settings-spotify-enabled">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+
+                    <div id="settings-spotify-details" class="nested-settings">
+                        <div class="settings-group">
+                            <label for="settings-spotify-client-id">Spotify Client ID</label>
+                            <input type="password" id="settings-spotify-client-id" placeholder="Inserisci lo Spotify Client ID">
+                        </div>
+                        <div class="settings-group">
+                            <label for="settings-spotify-redirect-uri">Spotify Redirect URI (da copiare in Spotify Dev Console)</label>
+                            <input type="text" id="settings-spotify-redirect-uri" readonly style="background-color: #222; color: #888; border: 1px solid #333; cursor: pointer; font-family: monospace; font-size: 11px;" title="Clicca per copiare">
+                        </div>
+                        <div class="settings-group" id="settings-spotify-disconnect-container" style="display: none;">
+                            <button id="disconnect-spotify-btn" class="cancel-edit-btn" style="width: 100%; margin-top: 10px; border: 1px solid #e91429; color: #e91429; background: none; border-radius: 4px; padding: 6px; cursor: pointer;">Scollega account Spotify</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenuto Tab Google Calendar -->
+                <div id="tab-calendar" class="tab-content">
+                    <div class="settings-group">
+                        <label for="settings-google-client-id">Google Client ID</label>
+                        <input type="password" id="settings-google-client-id" placeholder="Inserisci il Google Client ID">
+                    </div>
+                    <div class="settings-group">
+                        <label for="settings-google-redirect-uri">Google Redirect URI (da copiare in Google Cloud Console)</label>
+                        <input type="text" id="settings-google-redirect-uri" readonly style="background-color: #222; color: #888; border: 1px solid #333; cursor: pointer; font-family: monospace; font-size: 11px;" title="Clicca per copiare">
+                    </div>
+                    <div class="settings-group" id="settings-google-disconnect-container" style="display: none;">
+                        <button id="disconnect-google-btn" class="cancel-edit-btn" style="width: 100%; margin-top: 10px; border: 1px solid #e91429; color: #e91429; background: none; border-radius: 4px; padding: 6px; cursor: pointer;">Scollega account Google Calendar</button>
+                    </div>
+                </div>
+
+                <!-- Contenuto Tab Colonna Centrale -->
+                <div id="tab-centro" class="tab-content">
+                    <h3 style="margin: 0 0 15px 0; font-size: 15px; color: #e6e6e6;">Visualizzazione Tab Colonna Centrale</h3>
+                    <div class="settings-group" style="margin-bottom: 25px;">
+                        <label class="switch-container">
+                            <span class="switch-label">Calendario</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-tab-calendar-enabled" checked>
+                                <span class="switch-slider"></span>
+                            </label>
+                        </label>
+                        <label class="switch-container">
+                            <span class="switch-label">Notizie (RSS)</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-tab-rss-enabled" checked>
+                                <span class="switch-slider"></span>
+                            </label>
+                        </label>
+                        <label class="switch-container">
+                            <span class="switch-label">Giochino</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-tab-game-enabled" checked>
+                                <span class="switch-slider"></span>
+                            </label>
+                        </label>
+                    </div>
+
+                    <h3 style="margin: 0 0 5px 0; font-size: 15px; color: #e6e6e6;">Siti Web Personalizzati (IFrame)</h3>
+                    <p style="font-size: 11px; color: #888; margin: 0 0 15px 0; line-height: 1.4;">
+                        Aggiungi siti esterni da mostrare come tab. <em>Nota: molti siti non consentono l'inquadramento (iframe) per motivi di sicurezza (es. Google, YouTube, GitHub).</em>
+                    </p>
+                    <div class="settings-group">
+                        <div class="iframe-manager-list" id="iframe-sites-list">
+                            <!-- Popolato da JS -->
+                        </div>
+                        <div class="add-iframe-form-row">
+                            <input type="text" id="new-iframe-name" placeholder="Nome Tab (es. Wikipedia)" class="settings-input">
+                            <input type="text" id="new-iframe-url" placeholder="URL (es. https://it.m.wikipedia.org)" class="settings-input">
+                            <button type="button" class="add-link-btn" id="add-iframe-btn">Aggiungi</button>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 25px 0 5px 0; font-size: 15px; color: #e6e6e6;">Gestione Feed RSS</h3>
+                    <p style="font-size: 11px; color: #888; margin: 0 0 15px 0; line-height: 1.4;">
+                        Aggiungi o rimuovi feed RSS da visualizzare nella scheda Notizie.
+                    </p>
+                    <div class="settings-group">
+                        <div class="rss-manager-list" id="rss-feeds-list">
+                            <!-- Popolato da JS -->
+                        </div>
+                        <div class="add-rss-form-row">
+                            <input type="text" id="new-rss-name" placeholder="Nome Feed (es. ANSA)" class="settings-input">
+                            <input type="text" id="new-rss-url" placeholder="URL Feed RSS" class="settings-input">
+                            <button type="button" class="add-link-btn" id="add-rss-btn">Aggiungi</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contenuto Tab Barra di ricerca -->
+                <div id="tab-searchbar" class="tab-content">
+                    <h3 style="margin: 0 0 15px 0; font-size: 15px; color: #e6e6e6;">Motore di Ricerca Standard</h3>
+                    <div class="settings-group" style="margin-bottom: 25px;">
+                        <label for="settings-default-search-engine" style="display: block; margin-bottom: 8px; font-size: 13px; color: #ccc;">Seleziona il motore di ricerca predefinito</label>
+                        <select id="settings-default-search-engine" class="settings-select">
+                            <option value="google">Google</option>
+                            <option value="bing">Bing</option>
+                            <option value="duckduckgo">DuckDuckGo</option>
+                            <option value="brave">Brave Search</option>
+                            <option value="ecosia">Ecosia</option>
+                            <option value="yahoo">Yahoo</option>
+                        </select>
+                    </div>
+
+                    <h3 style="margin: 25px 0 15px 0; font-size: 15px; color: #e6e6e6;">Ricerca AI (Perplexity)</h3>
+                    <div class="settings-group">
+                        <div class="switch-container">
+                            <span class="switch-label">Abilita pulsante Ricerca AI nella barra</span>
+                            <label class="switch-input-wrapper">
+                                <input type="checkbox" id="settings-ai-search-enabled" checked>
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenuto Tab Backup -->
+                <div id="tab-backup" class="tab-content">
+                    <h3 style="margin: 0 0 5px 0; font-size: 15px; color: #e6e6e6;">Salvataggio e Ripristino Impostazioni</h3>
+                    <p style="font-size: 11px; color: #888; margin: 0 0 20px 0; line-height: 1.4;">
+                        Esporta tutte le preferenze, le chiavi API, le configurazioni dei widget e i tuoi link/categorie personalizzate in un file JSON per averne una copia di backup o sincronizzarle su un altro PC.
+                    </p>
+                    
+                    <div class="settings-group" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px;">
+                        <div class="backup-action-card">
+                            <h4>Esporta Impostazioni</h4>
+                            <p>
+                                Scarica un file di backup (.json) contenente tutte le tue impostazioni correnti.
+                            </p>
+                            <button type="button" class="save-btn" id="export-settings-btn" style="width: auto; background-color: #1DB954;">Esporta Backup</button>
+                        </div>
+                        
+                        <div class="backup-action-card">
+                            <h4>Importa Impostazioni</h4>
+                            <p>
+                                Carica un file di backup (.json) precedentemente esportato. <strong style="color: #e91429;">Attenzione: le impostazioni attuali verranno completamente sovrascritte.</strong>
+                            </p>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <input type="file" id="import-settings-file" accept=".json" style="display: none;">
+                                <button type="button" class="save-btn" id="import-settings-btn-trigger" style="width: auto; background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);">Seleziona File JSON</button>
+                                <span id="import-filename-display" class="backup-file-display">Nessun file selezionato</span>
+                            </div>
+                            <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                                <button type="button" class="save-btn" id="import-settings-btn" style="width: auto; background-color: #e91429; display: none;">Carica e Applica</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pulsante Salva Globale in basso -->
+                <div class="save-settings-container" id="save-settings-container">
+                    <button id="save-settings-btn" class="save-btn">Salva Impostazioni</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Dialog per Modifica Link/Categoria in colonna destra -->
+    <div id="edit-dialog-modal" class="modal">
+        <div class="modal-content edit-dialog-modal-content">
+            <span class="close-btn" id="edit-dialog-close">&times;</span>
+            <h3 id="edit-dialog-title">Modifica Elemento</h3>
+            
+            <div id="edit-dialog-fields" class="edit-dialog-fields-container">
+                <!-- Campi generati dinamicamente -->
+            </div>
+            
+            <div class="dialog-actions">
+                <button id="edit-dialog-cancel" class="dialog-cancel-btn">Annulla</button>
+                <button id="edit-dialog-save" class="dialog-save-btn">Salva</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collega i file JavaScript -->
+    <script src="shared/sanitize.js"></script>
+    <script src="shared/script.js"></script> 
+    <script src="components/spotify/spotify.js"></script>
+    <script src="components/meteo/meteo.js"></script>
+    <script src="components/searchbar/barradiricerca.js"></script>
+    <script src="components/clock/orologio.js"></script>
+    <script src="components/calendar/calendario.js"></script>
+    <script src="components/todo/To-do.js"></script>
+    <script src="components/chat/Chat.js"></script>
+    <script src="components/settings/link_defaults.js"></script>
+    <script src="components/settings/impostazioni.js"></script>
+    <script src="components/pomodoro/pomodoro.js"></script>
+    <script src="components/countdown/countdown.js"></script>
+    <script src="components/sysmonitor/sysmonitor.js"></script>
+    <script src="components/stocks/stocks.js"></script>
+    <script src="components/converter/converter.js"></script>
+    <script src="components/central-tabs/dino-game.js"></script>
+    <script src="components/central-tabs/central-tabs.js"></script>
+</body>
+</html>
