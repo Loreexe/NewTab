@@ -317,6 +317,8 @@
                         <div class="central-tab-panel active" id="tab-panel-calendar">
                             <!-- Interfaccia Calendario (Sempre attiva con supporto Locale + Google) -->
                             <div id="calendar-app-container" class="calendar-app">
+                                <!-- Banner di stato sincronizzazione Google Calendar -->
+                                <div id="calendar-sync-banner" class="calendar-sync-banner" style="display: none;" role="status"></div>
                                 <!-- Area Principale Calendario -->
                                 <div class="calendar-main">
                                     <!-- Header del Calendario -->
@@ -728,6 +730,10 @@
                     <div class="settings-group">
                         <label for="settings-google-client-id">Google Client ID</label>
                         <input type="password" id="settings-google-client-id" placeholder="Inserisci il Google Client ID">
+                        <p style="margin: 6px 0 0; font-size: 11px; color: #888; line-height: 1.5;">
+                            Crea un OAuth Client ID di tipo <strong>Applicazione web</strong> in Google Cloud Console.
+                            L'ID dell'estensione è stabile grazie alla chiave <code>key</code> nel manifest.
+                        </p>
                     </div>
                     <div class="settings-group">
                         <label for="settings-google-redirect-uri">Google Redirect URI (da copiare in Google Cloud Console)</label>

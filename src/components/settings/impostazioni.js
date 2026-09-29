@@ -988,8 +988,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const googleDisconnectContainer = document.getElementById('settings-google-disconnect-container');
         if (googleDisconnectContainer) {
-            const hasGoogleToken = localStorage.getItem('google_calendar_access_token');
-            googleDisconnectContainer.style.display = hasGoogleToken ? 'block' : 'none';
+            // Usa l'helper esposto dal calendario per non disallinearsi dalla sidebar
+            const connected = (typeof window.isGoogleCalendarConnected === 'function')
+                ? window.isGoogleCalendarConnected()
+                : Boolean(localStorage.getItem('google_calendar_access_token'));
+            googleDisconnectContainer.style.display = connected ? 'block' : 'none';
         }
 
         let enabledCentralTabs = [];
@@ -1168,6 +1171,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm('Sei sicuro di voler scollegare il tuo account Google Calendar?')) {
                 if (window.logoutGoogleCalendar) {
                     window.logoutGoogleCalendar();
+                    // Il bottone non deve restare visibile dopo lo scollegamento
+                    const container = document.getElementById('settings-google-disconnect-container');
+                    if (container) container.style.display = 'none';
                     alert('Account Google Calendar scollegato con successo.');
                 }
             }
@@ -1352,7 +1358,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     'chat_api_key', 'gemini_api_key', 'weather_api_key',
                     'spotify_client_id', 'google_client_id',
                     'spotify_access_token', 'spotify_refresh_token', 'spotify_expires_at', 'spotify_code_verifier',
-                    'google_calendar_access_token', 'google_calendar_expires_at'
+                    'google_calendar_access_token', 'google_calendar_expires_at',
+                    'google_calendar_refresh_token', 'google_code_verifier'
                 ]);
                 const includeSecrets = confirm(
                     'Esportare anche le API key e i token OAuth?\n\n' +

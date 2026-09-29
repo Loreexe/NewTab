@@ -28,3 +28,9 @@ node_modules/
 # Backup esportati contenenti possibili API key o token
 *backup*.json
 
+# Memoria e configurazione privati di OpenCode (mai su GitHub)
+.memory.md
+opencode.json
+opencode.jsonc
+.opencode/
+

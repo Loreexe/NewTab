@@ -8,7 +8,7 @@ Una dashboard personale e altamente personalizzabile per la pagina "Nuova Scheda
 
 *   **💬 Chat AI Integrata:** Interagisci con qualsiasi modello compatibile con OpenAI (OpenAI, Google Gemini, DeepSeek, OpenRouter, Groq, Ollama) o con un endpoint personalizzato (es. LM Studio) direttamente dalla nuova scheda (nome profilo configurabile, cronologia limitata a 40 turni, output Markdown sanificato).
 *   **🎵 Riproduttore Spotify:** Controlla la musica via PKCE + `chrome.identity` (richiede Client ID + Redirect URI).
-*   **📅 Google Calendar:** Viste giorno/settimana/mese, tooltip, creazione eventi, multi-calendario.
+*   **📅 Google Calendar:** Viste giorno/settimana/mese, tooltip, creazione eventi, multi-calendario, sincronizzazione automatica con refresh token.
 *   **☀️ Widget Meteo:** Previsioni OpenWeatherMap con cache 30 minuti, fallback offline fino a 24h e gestione errori/timeout.
 *   **📈 Mercati Finanziari:** Azioni (Yahoo Finance, sparkline reali) e crypto (CoinGecko), cache 5min, mai dati inventati (N/D + badge cache).
 *   **🍅 Timer Pomodoro:** Focus/pause configurabili con anello progressivo e beep sintetizzato.
@@ -48,22 +48,56 @@ Per abilitare tutte le funzionalità avanzate, clicca sull'icona dell'ingranaggi
 *   **Chat AI (OpenAI Compatibile):** Endpoint API personalizzabile (default: `https://api.openai.com/v1`) e API key per OpenAI o qualsiasi provider compatibile (DeepSeek, OpenRouter, Groq, Ollama locale, ecc.).
 *   **OpenWeatherMap API Key:** Richiesta per le previsioni meteo. Registrati su [OpenWeatherMap](https://openweathermap.org/) per ottenere una chiave gratuita.
 *   **Spotify Client ID:** Necessario per il widget Spotify. Registra un'applicazione sul [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) e inserisci il Client ID (assicurati di impostare l'URI di reindirizzamento corretto indicato nelle istruzioni di Spotify).
-*   **Google Client ID:** Richiesto per Google Calendar. Vedi sezione sotto per `redirect_uri_mismatch`.
+*   **Google Client ID:** Richiesto per Google Calendar. Vedi la sezione "Collegare Google Calendar" qui sotto.
 
 *Nota: Le chiavi vengono usate solo per le chiamate ai rispettivi servizi e non vengono mai memorizzate online: tutti i dati rimangono salvati localmente sul tuo browser tramite `localStorage`. L'export backup chiede se includere segreti (default consigliato: esclusi).*
 
 ---
 
-## 🛟 Fix errore 400 redirect_uri_mismatch (Google Calendar / Spotify)
+## 📅 Collegare Google Calendar
 
-Se vedi `Errore 400: redirect_uri_mismatch ... redirect_uri=https://<ID>.chromiumapp.org/`:
+Il calendario usa **OAuth 2.0 Authorization Code con PKCE** e conserva un **refresh token**, così la
+sincronizzazione si rinnova da sola indefinitely senza ricollarti ogni volta.
 
-1. Copia l'URI esatto da Impostazioni -> Google Calendar / Spotify -> campo Redirect URI (click per copiare) oppure dalla schermata login calendario.
-2. Vai su [Google Cloud Console](https://console.cloud.google.com/) -> API e servizi -> **Abilita Google Calendar API**.
-3. **OAuth consent screen** -> External -> aggiungi la tua Gmail in **Test users**.
-4. **Credenziali** -> Crea ID client OAuth -> Tipo **Estensione Chrome** (Item ID = ID in `chrome://extensions`, es. `chppcaaaclfmlicbdfbpmjeaojhhkncc`). Se usi tipo Web, aggiungi manualmente l'URI del punto 1 in **URI di reindirizzamento autorizzati**.
-5. Incolla il Client ID `xxx.apps.googleusercontent.com` nelle Impostazioni e riprova.
-6. Nota unpacked: senza `key` nel manifest l'ID cambia per ogni PC/installazione — ripeti la registrazione o pinna una `key` stabile. Per Spotify fai lo stesso in [Spotify Dashboard](https://developer.spotify.com/dashboard) -> Edit Settings -> Redirect URIs.
+1. In [Google Cloud Console](https://console.cloud.google.com/) -> **API e servizi** -> **Abilita Google Calendar API**.
+2. **OAuth consent screen** -> External -> aggiungi la tua Gmail in **Test users**.
+3. **Credenziali** -> **Crea ID client OAuth** -> Tipo **Applicazione web** (l'estensione usa PKCE,
+   non serve il tipo "Estensione Chrome").
+4. Aggiungi negli **URI di reindirizzamento autorizzati** l'URI mostrato in
+   Impostazioni -> Google Calendar -> campo *Redirect URI* (click per copiarlo).
+5. Incolla il Client ID `xxx.apps.googleusercontent.com` in Impostazioni -> Google Calendar.
+6. Nella dashboard apri il menu **Calendari ▾** e premi **+ Connetti Google Calendar**.
+
+Il calendario si sincronizza all'apertura della scheda, ogni 5 minuti e al ritorno sulla scheda.
+
+> **Aggiornamento dalla versione 1.1.1:** il flusso precedente non rilasciava un refresh token, per cui
+> la sessione si deteriorava dopo circa un'ora e il calendario tornava vuoto senza errori. Devi
+> **ricollarti una volta** con il nuovo flusso: il token precedente non è convertibile.
+
+### Se la sincronizzazione non funziona
+
+Un banner rosso sopra il calendario segnala il problema. I casi più frequenti:
+
+| Messaggio | Causa | Soluzione |
+|---|---|---|
+| `Accesso negato (403)` | Google Calendar API non abilitata nel progetto | Abilita l'API (passo 1) |
+| `Token non valido: ricollegati` | Refresh token revocato o scaduto | Ripeti il collegamento |
+| `redirect_uri_mismatch` | URI non registrato | Copialo da Impostazioni e registralo (passo 4) |
+
+Per Spotify il procedimento è analogo: registra l'URI di reindirizzamento nel
+[Spotify Dashboard](https://developer.spotify.com/dashboard) -> Edit Settings -> Redirect URIs.
+
+---
+
+## 🛟 Fix errore 400 redirect_uri_mismatch (Spotify)
+
+Si applica a Spotify (Google Calendar è coperto dalla sezione precedente). Se vedi
+`Errore 400: redirect_uri_mismatch ... redirect_uri=https://<ID>.chromiumapp.org/`:
+
+1. Copia l'URI esatto da Impostazioni -> Spotify -> campo Redirect URI (click per copiare).
+2. Registralo in [Spotify Dashboard](https://developer.spotify.com/dashboard) -> Edit Settings -> Redirect URIs.
+3. Nota unpacked: senza `key` nel manifest l'ID cambia per ogni PC/installazione. Questo progetto
+   include già una `key` stabile nel manifest, quindi l'URI resta valido tra installazioni.
 
 ---
 

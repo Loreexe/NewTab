@@ -84,78 +84,33 @@
 }
 
 /* ==========================================================================
-   Autenticazione / Connection Overlay
-   ========================================================================== */
-.calendar-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(18, 18, 18, 0.85);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 99;
-    padding: 20px;
-    text-align: center;
-}
-
-.calendar-login-box {
-    max-width: 420px;
-    padding: 30px;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.calendar-login-box h2 {
-    margin-top: 0;
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: #ffffff;
-    margin-bottom: 12px;
-}
-
-.calendar-login-box p {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.7);
-    line-height: 1.5;
-    margin-bottom: 24px;
-}
-
-.calendar-connect-btn {
-    background: #4285F4;
-    color: white;
-    border: none;
-    padding: 12px 28px;
-    border-radius: 24px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
-}
-
-.calendar-connect-btn:hover {
-    background: #357ae8;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(66, 133, 244, 0.6);
-}
-
-/* ==========================================================================
    Calendar Application Container
    ========================================================================== */
 .calendar-app {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     height: 100%;
     width: 100%;
     overflow: hidden;
     min-width: 0;
+}
+
+/* Banner di stato della sincronizzazione Google Calendar */
+.calendar-sync-banner {
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding: 7px 12px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: #ffcdd2;
+    background: rgba(233, 20, 41, 0.16);
+    border-bottom: 1px solid rgba(233, 20, 41, 0.4);
+    user-select: none;
+}
+
+.calendar-sync-banner.error {
+    color: #ffcdd2;
 }
 
 /* Dropdown per i calendari */
