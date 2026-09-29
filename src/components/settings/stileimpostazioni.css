@@ -76,6 +76,7 @@
     gap: 8px;
     box-sizing: border-box;
     flex-shrink: 0;
+    overflow-y: auto;
 }
 
 .settings-sidebar h3 {
@@ -635,6 +636,98 @@
 
 .save-btn:active {
     transform: scale(0.98);
+}
+
+/* Tab Versione: versione installata, stato e link al repository */
+.version-headline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.version-label {
+    font-size: 12px;
+    color: #888888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.version-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+}
+
+.version-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.version-badge-ok {
+    background: rgba(76, 175, 80, 0.15);
+    color: #6fd06f;
+    border-color: rgba(76, 175, 80, 0.35);
+}
+
+.version-badge-new {
+    background: rgba(255, 176, 32, 0.15);
+    color: #ffb020;
+    border-color: rgba(255, 176, 32, 0.4);
+}
+
+.version-badge-err {
+    background: rgba(255, 107, 107, 0.15);
+    color: #ff6b6b;
+    border-color: rgba(255, 107, 107, 0.35);
+}
+
+.version-badge-stale {
+    background: rgba(255, 255, 255, 0.05);
+    color: #aaaaaa;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.version-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.version-btn-secondary {
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.version-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.version-btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.version-meta {
+    font-size: 11px;
+    color: #888888;
+    margin: 12px 0 0 0;
+    line-height: 1.45;
 }
 
 

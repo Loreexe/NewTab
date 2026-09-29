@@ -269,7 +269,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Indicatore versione (per verificare che l'estensione sia aggiornata)
     const chatHeader = document.querySelector('.ai-chat-header-title');
     if (chatHeader) {
-      chatHeader.title = 'Custom New Tab v1.1.1';
+      // Letta dal manifest: era hardcoded su v1.1.1 e restava ferma ai bump di versione.
+      let extensionVersion = '?';
+      try {
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getManifest) {
+          extensionVersion = chrome.runtime.getManifest().version || '?';
+        }
+      } catch (e) { /* ignore */ }
+      chatHeader.title = 'Custom New Tab v' + extensionVersion;
     }
 
     let isSending = false;

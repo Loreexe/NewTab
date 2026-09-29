@@ -557,6 +557,7 @@
                 <button class="tab-btn" data-tab="tab-calendar">Google Calendar</button>
                 <button class="tab-btn" data-tab="tab-searchbar">Barra di ricerca</button>
                 <button class="tab-btn" data-tab="tab-backup">Backup</button>
+                <button class="tab-btn" data-tab="tab-version">Versione</button>
             </div>
             
             <!-- Area contenuto a destra -->
@@ -868,6 +869,56 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Contenuto Tab Versione -->
+                <div id="tab-version" class="tab-content">
+                    <h3 style="margin: 0 0 5px 0; font-size: 15px; color: #e6e6e6;">Versione Installata</h3>
+                    <p style="font-size: 11px; color: #888; margin: 0 0 15px 0; line-height: 1.4;">
+                        Controlla se su GitHub è disponibile una versione più recente del tuo Custom New Tab.
+                    </p>
+
+                    <div class="settings-group" style="margin-bottom: 25px;">
+                        <div class="backup-action-card">
+                            <div class="version-headline">
+                                <span class="version-label">Versione in uso</span>
+                                <span id="version-current" class="version-number">v?</span>
+                            </div>
+                            <div class="version-headline" style="margin-top: 10px;">
+                                <span class="version-label">Stato</span>
+                                <span id="version-status" class="version-badge version-badge-stale">In verifica...</span>
+                            </div>
+                            <p id="version-status-detail" class="version-meta">Contattando GitHub...</p>
+                            <div class="version-actions">
+                                <button type="button" class="save-btn" id="check-updates-btn" style="width: auto;">Verifica ora</button>
+                                <button type="button" class="save-btn" id="download-zip-btn" style="width: auto; display: none; background-color: #ffb020; box-shadow: 0 4px 12px rgba(255, 176, 32, 0.3);">Scarica nuova versione</button>
+                            </div>
+                        </div>
+
+                        <p class="settings-help-text" style="margin-top: 12px;">
+                            Per aggiornare: clicca <strong>Scarica nuova versione</strong>, estrai lo ZIP in una cartella e
+                            apri <code>chrome://extensions</code> -> attiva la <strong>Modalità sviluppatore</strong> ->
+                            <strong>Carica estensione non pacchettizzata</strong> -> seleziona la cartella <code>src</code> estratta.
+                            Le tue impostazioni sono salvate nel browser e non andranno perse.
+                        </p>
+                    </div>
+
+                    <h3 style="margin: 0 0 5px 0; font-size: 15px; color: #e6e6e6;">Repository GitHub</h3>
+                    <p style="font-size: 11px; color: #888; margin: 0 0 15px 0; line-height: 1.4;">
+                        Il codice sorgente è open source (GPL-3.0). Contributions, segnalazioni di bug e crash sono benvenuti.
+                    </p>
+
+                    <div class="settings-group">
+                        <div class="backup-action-card">
+                            <h4>Loreexe/NewTab</h4>
+                            <p>Dashboard personale per la nuova scheda del browser: chat AI, Spotify, Google Calendar, meteo, mercati, todo e molto altro.</p>
+                            <div class="version-actions">
+                                <button type="button" class="version-btn-secondary" id="github-repo-btn">Apri su GitHub</button>
+                                <button type="button" class="version-btn-secondary" id="github-issues-btn">Segnala un problema</button>
+                            </div>
+                            <p class="version-meta" style="margin-top: 12px;">Autore: Lorenzo Geraci &middot; Licenza GNU General Public License v3.0</p>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Pulsante Salva Globale in basso -->
                 <div class="save-settings-container" id="save-settings-container">
@@ -906,6 +957,7 @@
     <script src="components/chat/Chat.js"></script>
     <script src="components/settings/link_defaults.js"></script>
     <script src="components/settings/impostazioni.js"></script>
+    <script src="components/settings/aggiornamenti.js"></script>
     <script src="components/pomodoro/pomodoro.js"></script>
     <script src="components/countdown/countdown.js"></script>
     <script src="components/sysmonitor/sysmonitor.js"></script>

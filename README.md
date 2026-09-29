@@ -21,6 +21,7 @@ Una dashboard personale e altamente personalizzabile per la pagina "Nuova Scheda
 *   **📰 Notizie RSS:** Feed personalizzabili via rss2json con timeout 15s e cache 24h.
 *   **🦖 Dino Game + Tab IFrame:** Colonna centrale a carosello con tab personalizzate (sandboxed, senza bypass CSP).
 *   **💾 Backup:** Export/import JSON con opzione includi/escludi segreti.
+*   **🔄 Aggiornamenti:** Tab *Versione* in Impostazioni con controllo automatico della versione su GitHub e download dello ZIP.
 
 ---
 
@@ -90,6 +91,31 @@ Un banner rosso sopra il calendario segnala il problema. I casi più frequenti:
 
 Per Spotify il procedimento è analogo: registra l'URI di reindirizzamento nel
 [Spotify Dashboard](https://developer.spotify.com/dashboard) -> Edit Settings -> Redirect URIs.
+
+---
+
+## 🔄 Aggiornare l'Estensione
+
+L'estensione non si aggiorna da sola (è installata in modalità *unpacked*). Per controllare e
+scaricare le nuove versioni usa la tab **Versione** nelle impostazioni (icona ⚙️):
+
+1. Apri **Impostazioni → Versione**: vedi la versione installata e il suo stato
+   (*Sei aggiornato* / *Nuova versione disponibile*).
+2. Se c'è un aggiornamento, premi **Scarica nuova versione**: si scarica lo ZIP del branch `main`.
+3. Estrai lo ZIP e apri `chrome://extensions` → **Carica estensione non pacchettizzata** →
+   seleziona la cartella `src` estratta (oppure ricarica quella già caricata: la spunta
+   *Caricata come estensione non pacchettizzata* con il bottone ⟳ aggiorna la cartella esistente).
+
+Il controllo confronta la versione del tuo `manifest.json` con quella pubblicata su GitHub e
+usa una cache di 6 ore, così non genera traffico a ogni apertura. Con il bottone
+**Verifica ora** salti la cache. Se GitHub non è raggiungibile viene mostrato l'ultimo
+risultato valido, etichettato come "dalla cache".
+
+Le impostazioni sono salvate nel browser e non vengono perse durante l'aggiornamento; se
+cambiasse il computer puoi prima fare un **Backup** (tab *Backup*) e reimportarlo dopo.
+
+Le novità di ogni versione si trovano nella cronologia dei commit del repository
+([Loreexe/NewTab](https://github.com/Loreexe/NewTab/commits/main)).
 
 ---
 
