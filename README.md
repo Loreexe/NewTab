@@ -117,6 +117,9 @@ cambiasse il computer puoi prima fare un **Backup** (tab *Backup*) e reimportarl
 Le novità di ogni versione si trovano nella cronologia dei commit del repository
 ([Loreexe/NewTab](https://github.com/Loreexe/NewTab/commits/main)).
 
+Nella stessa tab trovi anche il pulsante **Metti una stella ★**: apre la pagina del repository,
+dove il pulsante *Star* di GitHub è in alto a destra.
+
 ---
 
 ## 🛟 Fix errore 400 redirect_uri_mismatch (Spotify)

@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('download-zip-btn');
     const repoLinkBtn = document.getElementById('github-repo-btn');
     const issuesLinkBtn = document.getElementById('github-issues-btn');
+    const starBtn = document.getElementById('github-star-btn');
 
     if (!currentVersionEl || !statusBadgeEl) return;
 
@@ -194,6 +195,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (issuesLinkBtn) {
         issuesLinkBtn.addEventListener('click', () => openExternal(ISSUES_URL));
+    }
+    if (starBtn) {
+        // Nessun link diretto al pulsante Star: github.com/<owner>/<repo>/star risponde 404
+        // senza sessione GitHub. Apriamo la pagina del repo, dove la stella è in alto a destra.
+        starBtn.addEventListener('click', () => openExternal(REPO_URL));
     }
 
     // Ricalcola la versione locale e riusa la cache valida a ogni apertura del modale.
