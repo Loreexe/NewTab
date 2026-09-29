@@ -981,6 +981,11 @@ document.addEventListener('DOMContentLoaded', () => {
             googleClientIdInput.value = localStorage.getItem('google_client_id') || '';
         }
 
+        const googleClientSecretInput = document.getElementById('settings-google-client-secret');
+        if (googleClientSecretInput) {
+            googleClientSecretInput.value = localStorage.getItem('google_client_secret') || '';
+        }
+
         const googleRedirectUriInput = document.getElementById('settings-google-redirect-uri');
         if (googleRedirectUriInput) {
             googleRedirectUriInput.value = getExtensionRedirectUri();
@@ -1133,6 +1138,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Attenzione: il Google Client ID non sembra valido (deve terminare con .apps.googleusercontent.com). Salvato comunque, ma il login fallirà con redirect_uri_mismatch se sbagliato.');
             }
             localStorage.setItem('google_client_id', gid);
+        }
+
+        const googleClientSecretInput = document.getElementById('settings-google-client-secret');
+        if (googleClientSecretInput) {
+            localStorage.setItem('google_client_secret', googleClientSecretInput.value.trim());
         }
 
         // Save Searchbar settings
@@ -1356,7 +1366,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const SENSITIVE_KEYS = new Set([
                     'chat_api_key', 'gemini_api_key', 'weather_api_key',
-                    'spotify_client_id', 'google_client_id',
+                    'spotify_client_id', 'google_client_id', 'google_client_secret',
                     'spotify_access_token', 'spotify_refresh_token', 'spotify_expires_at', 'spotify_code_verifier',
                     'google_calendar_access_token', 'google_calendar_expires_at',
                     'google_calendar_refresh_token', 'google_code_verifier'

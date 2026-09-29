@@ -48,7 +48,7 @@ Per abilitare tutte le funzionalità avanzate, clicca sull'icona dell'ingranaggi
 *   **Chat AI (OpenAI Compatibile):** Endpoint API personalizzabile (default: `https://api.openai.com/v1`) e API key per OpenAI o qualsiasi provider compatibile (DeepSeek, OpenRouter, Groq, Ollama locale, ecc.).
 *   **OpenWeatherMap API Key:** Richiesta per le previsioni meteo. Registrati su [OpenWeatherMap](https://openweathermap.org/) per ottenere una chiave gratuita.
 *   **Spotify Client ID:** Necessario per il widget Spotify. Registra un'applicazione sul [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) e inserisci il Client ID (assicurati di impostare l'URI di reindirizzamento corretto indicato nelle istruzioni di Spotify).
-*   **Google Client ID:** Richiesto per Google Calendar. Vedi la sezione "Collegare Google Calendar" qui sotto.
+*   **Google Client ID & Secret:** Richiesti per Google Calendar. Vedi la sezione "Collegare Google Calendar" qui sotto.
 
 *Nota: Le chiavi vengono usate solo per le chiamate ai rispettivi servizi e non vengono mai memorizzate online: tutti i dati rimangono salvati localmente sul tuo browser tramite `localStorage`. L'export backup chiede se includere segreti (default consigliato: esclusi).*
 
@@ -64,15 +64,18 @@ sincronizzazione si rinnova da sola indefinitely senza ricollarti ogni volta.
 3. **Credenziali** -> **Crea ID client OAuth** -> Tipo **Applicazione web** (l'estensione usa PKCE,
    non serve il tipo "Estensione Chrome").
 4. Aggiungi negli **URI di reindirizzamento autorizzati** l'URI mostrato in
-   Impostazioni -> Google Calendar -> campo *Redirect URI* (click per copiarlo).
-5. Incolla il Client ID `xxx.apps.googleusercontent.com` in Impostazioni -> Google Calendar.
+   Impostazioni -> Google Calendar -> campo *Redirect URI* (click per copiarlo):
+   `https://bpcgidbbmoafcgeojinfhjfeacnficll.chromiumapp.org/`
+5. Incolla il **Client ID** (`xxx.apps.googleusercontent.com`) e il **Client Secret** (`GOCSPX-...`) in Impostazioni -> Google Calendar e salva.
 6. Nella dashboard apri il menu **Calendari ▾** e premi **+ Connetti Google Calendar**.
 
 Il calendario si sincronizza all'apertura della scheda, ogni 5 minuti e al ritorno sulla scheda.
 
-> **Aggiornamento dalla versione 1.1.1:** il flusso precedente non rilasciava un refresh token, per cui
-> la sessione si deteriorava dopo circa un'ora e il calendario tornava vuoto senza errori. Devi
-> **ricollarti una volta** con il nuovo flusso: il token precedente non è convertibile.
+### Nota sulla "Verifica dell'app" di Google
+Per un'estensione personale o open-source usata con le proprie credenziali, **non è necessario far verificare l'app da Google**:
+- Mantenendo lo stato della schermata di consenso su **"In fase di test"** (*Testing*) e aggiungendo il proprio indirizzo Gmail sotto **Utenti di test** (*Test users*), l'accesso funziona perfettamente e senza limiti di tempo.
+- Se appare la schermata *"Google non ha verificato questa app"*, basta cliccare su **Avanzate** -> **Apri Custom New Tab (non sicuro)** -> **Continua**.
+- La verifica formale di Google (che richiede un dominio web verificato, video dimostrativo su YouTube e revisione da parte del team di Google Trust & Safety) è necessaria solo per app commerciali multi-utente distribuite pubblicamente.
 
 ### Se la sincronizzazione non funziona
 
@@ -83,6 +86,7 @@ Un banner rosso sopra il calendario segnala il problema. I casi più frequenti:
 | `Accesso negato (403)` | Google Calendar API non abilitata nel progetto | Abilita l'API (passo 1) |
 | `Token non valido: ricollegati` | Refresh token revocato o scaduto | Ripeti il collegamento |
 | `redirect_uri_mismatch` | URI non registrato | Copialo da Impostazioni e registralo (passo 4) |
+| `client_secret is missing` | Secret client non inserito | Copia il Secret client da Google Cloud Console (passo 5) |
 
 Per Spotify il procedimento è analogo: registra l'URI di reindirizzamento nel
 [Spotify Dashboard](https://developer.spotify.com/dashboard) -> Edit Settings -> Redirect URIs.

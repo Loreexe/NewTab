@@ -276,6 +276,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function buildAuthErrorMessage(errorMsg) {
         const redirectUri = getRedirectUri() || '(chrome.identity non disponibile)';
         const lower = (errorMsg || '').toLowerCase();
+
+        if (lower.includes('only one web auth flow')) {
+            return "Una finestra di autenticazione Google è già aperta in background.\n\n"
+                + "Controlla la barra delle applicazioni o riapri la scheda prima di riprovare.";
+        }
+
+        if (lower.includes('client_secret')) {
+            return "Google Client Secret mancante o non valido.\n\n"
+                + "Apri le Impostazioni (icona ⚙️ in alto a destra) -> scheda Google Calendar\n"
+                + "e incolla il Client Secret copiato da Google Cloud Console (inizia con GOCSPX-).";
+        }
+
         const isUserCancel = lower.includes('did not approve')
             || lower.includes('access_denied')
             || lower.includes('access denied')
@@ -322,16 +334,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function exchangeCodeForToken(code, codeVerifier) {
         const clientId = (localStorage.getItem('google_client_id') || '').trim();
+        const clientSecret = (localStorage.getItem('google_client_secret') || '').trim();
+
+        const params = {
+            client_id: clientId,
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: REDIRECT_URI,
+            code_verifier: codeVerifier
+        };
+        if (clientSecret) {
+            params.client_secret = clientSecret;
+        }
+
         const response = await fetch(TOKEN_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                client_id: clientId,
-                grant_type: 'authorization_code',
-                code: code,
-                redirect_uri: REDIRECT_URI,
-                code_verifier: codeVerifier
-            })
+            body: new URLSearchParams(params)
         });
 
         if (!response.ok) {
@@ -343,18 +362,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function refreshAccessToken() {
         const clientId = (localStorage.getItem('google_client_id') || '').trim();
+        const clientSecret = (localStorage.getItem('google_client_secret') || '').trim();
         const refreshToken = localStorage.getItem('google_calendar_refresh_token');
         if (!refreshToken || !clientId) return null;
 
         try {
+            const params = {
+                client_id: clientId,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            };
+            if (clientSecret) {
+                params.client_secret = clientSecret;
+            }
+
             const response = await fetch(TOKEN_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    client_id: clientId,
-                    grant_type: 'refresh_token',
-                    refresh_token: refreshToken
-                })
+                body: new URLSearchParams(params)
             });
 
             if (!response.ok) {
@@ -380,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Single-flight: evita N refresh concorrenti quando si caricano N calendari
     let tokenRefreshInFlight = null;
+    let isGoogleAuthInProgress = false;
 
     async function getValidToken() {
         const token = localStorage.getItem('google_calendar_access_token');
@@ -399,13 +425,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function googleLogin() {
+        if (isGoogleAuthInProgress) {
+            console.warn("[Calendar] Login Google già in corso...");
+            return null;
+        }
+
         const clientId = (localStorage.getItem('google_client_id') || '').trim();
+        const clientSecret = (localStorage.getItem('google_client_secret') || '').trim();
+
         if (!clientId) {
             alert("Per favore, configura prima il tuo Google Client ID nelle Impostazioni (icona ⚙️ in alto a destra).");
             return null;
         }
         if (!/^.*\.apps\.googleusercontent\.com$/.test(clientId)) {
             alert("Il Google Client ID non sembra valido.\nDeve terminare con .apps.googleusercontent.com\nValore attuale: " + clientId);
+            return null;
+        }
+        if (!clientSecret) {
+            alert("Per favore, configura anche il tuo Google Client Secret nelle Impostazioni (icona ⚙️ in alto a destra).\n\n"
+                + "Lo trovi nella pagina del tuo Client ID (tipo 'Applicazione web') in Google Cloud Console (Secret client).");
             return null;
         }
         if (typeof chrome === 'undefined' || !chrome.identity) {
@@ -417,6 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
 
+        isGoogleAuthInProgress = true;
         const codeVerifier = generateRandomString(128);
         localStorage.setItem('google_code_verifier', codeVerifier);
         const codeChallenge = await generateCodeChallenge(codeVerifier);
@@ -437,6 +476,11 @@ document.addEventListener('DOMContentLoaded', () => {
         setGoogleState('syncing', '');
 
         return new Promise((resolve) => {
+            const finish = (result) => {
+                isGoogleAuthInProgress = false;
+                resolve(result);
+            };
+
             chrome.identity.launchWebAuthFlow({ url: authUrl, interactive: true }, async (redirectUrl) => {
                 const lastErr = (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.lastError)
                     ? chrome.runtime.lastError.message
@@ -453,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         setGoogleState('disconnected', '');
                     }
-                    resolve(null);
+                    finish(null);
                     return;
                 }
 
@@ -463,7 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } catch (e) {
                     localStorage.removeItem('google_code_verifier');
                     setGoogleState('error', 'Risposta di autorizzazione non valida.');
-                    resolve(null);
+                    finish(null);
                     return;
                 }
 
@@ -479,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         setGoogleState('disconnected', '');
                     }
-                    resolve(null);
+                    finish(null);
                     return;
                 }
 
@@ -487,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!code) {
                     localStorage.removeItem('google_code_verifier');
                     setGoogleState('error', 'Google non ha restituito il codice di autorizzazione.');
-                    resolve(null);
+                    finish(null);
                     return;
                 }
 
@@ -500,17 +544,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert("Collegamento riuscito ma Google non ha rilasciato un refresh token.\n"
                             + "La sincronizzazione si arresterà a breve. Ricollegati e, se persiste, verifica\n"
                             + "l'OAuth consent screen del progetto in Google Cloud Console.");
-                        resolve(null);
+                        finish(null);
                         return;
                     }
                     setGoogleState('connected', '');
-                    resolve(data.access_token || null);
+                    finish(data.access_token || null);
                 } catch (error) {
                     console.error("Scambio codice/token fallito:", error);
                     localStorage.removeItem('google_code_verifier');
                     setGoogleState('error', 'Scambio del token non riuscito: ricollegati.');
                     alert("Errore durante lo scambio del codice di autorizzazione:\n" + error.message);
-                    resolve(null);
+                    finish(null);
                 }
             });
         });
