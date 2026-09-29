@@ -27,14 +27,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!leftVisible && !rightVisible) return;
 
+        // La colonna centrale può essere collassata (nessuna tab attiva): in quel caso
+        // non contribuisce né con uno slot nel flexbox né con il proprio gap.
+        const centroVisible = !document.body.classList.contains('central-column-collapsed');
+        const centroMinWidth = centroVisible ? 200 : 0; // minimo assoluto (da CSS)
+
         const mainStyle = window.getComputedStyle(main);
         const gapVal = parseFloat(mainStyle.columnGap) || 0;
-        const visibleItems = 1 + (leftVisible ? 2 : 0) + (rightVisible ? 2 : 0);
-        const totalGaps = (visibleItems - 1) * gapVal;
+        const visibleItems = (centroVisible ? 1 : 0) + (leftVisible ? 2 : 0) + (rightVisible ? 2 : 0);
+        const totalGaps = Math.max(0, visibleItems - 1) * gapVal;
         const resizerWidths = (leftVisible ? 4 : 0) + (rightVisible ? 4 : 0);
         
-        const centroMinWidth = 200; // Minimo assoluto della colonna centrale (da CSS)
-
         // Carica i valori salvati o calcola il valore di default (20% dello schermo)
         let leftWidth = leftVisible ? parseFloat(localStorage.getItem('sidebar-left-width')) : 0;
         let rightWidth = rightVisible ? parseFloat(localStorage.getItem('sidebar-right-width')) : 0;
@@ -299,11 +302,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const mainStyle = window.getComputedStyle(main);
             const gapVal = parseFloat(mainStyle.columnGap) || 0;
-            const visibleItems = 1 + (rightVisible ? 2 : 0) + 2;
+            const centroVisible = !document.body.classList.contains('central-column-collapsed');
+            const visibleItems = (centroVisible ? 1 : 0) + (rightVisible ? 2 : 0) + 2;
             const totalGaps = (visibleItems - 1) * gapVal;
             const resizerWidths = 4 + (rightVisible ? 4 : 0);
             
-            const centroMinWidth = 200; // Minimo assoluto della colonna centrale
+            const centroMinWidth = centroVisible ? 200 : 0; // minimo assoluto della colonna centrale
             
             const maxLeftWidth = mainWidth - rightWidth - totalGaps - resizerWidths - centroMinWidth;
             const newWidth = Math.max(200, Math.min(startWidth + deltaX, maxLeftWidth));
@@ -341,11 +345,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const mainStyle = window.getComputedStyle(main);
             const gapVal = parseFloat(mainStyle.columnGap) || 0;
-            const visibleItems = 1 + (leftVisible ? 2 : 0) + 2;
+            const centroVisible = !document.body.classList.contains('central-column-collapsed');
+            const visibleItems = (centroVisible ? 1 : 0) + (leftVisible ? 2 : 0) + 2;
             const totalGaps = (visibleItems - 1) * gapVal;
-            const resizerWidths = 4 + (leftVisible ? 4 : 0);
+            const resizerWidths = (leftVisible ? 4 : 0) + 4;
             
-            const centroMinWidth = 200; // Minimo assoluto della colonna centrale
+            const centroMinWidth = centroVisible ? 200 : 0; // minimo assoluto della colonna centrale
             
             const maxRightWidth = mainWidth - leftWidth - totalGaps - resizerWidths - centroMinWidth;
             const newWidth = Math.max(200, Math.min(startWidth - deltaX, maxRightWidth));
@@ -424,4 +429,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Gestore per ridimensionare dinamicamente le colonne in caso di restringimento della finestra
     window.addEventListener('resize', adjustSidebarWidths);
+
+    // Esposto per central-tabs.js: quando la colonna centrale collassa,
+    // le due laterali devono ricalcolare subito le proprie larghezze.
+    window.AdjustLayout = { refresh: adjustSidebarWidths };
 });

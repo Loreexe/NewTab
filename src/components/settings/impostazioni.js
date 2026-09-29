@@ -1000,9 +1000,11 @@ document.addEventListener('DOMContentLoaded', () => {
             googleDisconnectContainer.style.display = connected ? 'block' : 'none';
         }
 
+        // Array vuoto = utente ha disattivato tutto: deve restare vuoto, niente fallback.
         let enabledCentralTabs = [];
         try {
-            enabledCentralTabs = JSON.parse(localStorage.getItem('central_tabs_enabled')) || ['calendar', 'rss', 'game'];
+            const storedCentralTabs = JSON.parse(localStorage.getItem('central_tabs_enabled'));
+            enabledCentralTabs = Array.isArray(storedCentralTabs) ? storedCentralTabs : ['calendar', 'rss', 'game'];
         } catch (e) {
             enabledCentralTabs = ['calendar', 'rss', 'game'];
         }
@@ -1012,6 +1014,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const tabRssCheckbox = document.getElementById('settings-tab-rss-enabled');
         if (tabRssCheckbox) tabRssCheckbox.checked = enabledCentralTabs.includes('rss');
+
+        // Riallineato come Calendar e RSS: senza questo lo switch ripartiva da "attivo"
+        // (checked hardcoded in HTML) e il salvataggio successivo riaccendeva il Giochino.
+        const tabGameCheckboxLoad = document.getElementById('settings-tab-game-enabled');
+        if (tabGameCheckboxLoad) tabGameCheckboxLoad.checked = enabledCentralTabs.includes('game');
         
         if (defaultSearchEngineSelect) {
             defaultSearchEngineSelect.value = localStorage.getItem('defaultSearchEngine') || 'google';
@@ -1077,7 +1084,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabCalendarCheckbox && tabCalendarCheckbox.checked) enabledCentralTabs.push('calendar');
         if (tabRssCheckbox && tabRssCheckbox.checked) enabledCentralTabs.push('rss');
         if (tabGameCheckbox && tabGameCheckbox.checked) enabledCentralTabs.push('game');
-        
+
+        // Avvisa prima di salvare: senza tab (neanche iframe) la colonna centrale sparisce.
+        // I link personalizzati non contano: sono tab a sé e vengono mostrati anche da sole.
+        if (enabledCentralTabs.length === 0) {
+            let hasIframeTabs = false;
+            try {
+                hasIframeTabs = Array.isArray(JSON.parse(localStorage.getItem('central_tabs_iframes')))
+                    && JSON.parse(localStorage.getItem('central_tabs_iframes')).length > 0;
+            } catch (e) {
+                hasIframeTabs = false;
+            }
+
+            if (!hasIframeTabs) {
+                const proceed = confirm(
+                    'Attenzione: hai disattivato tutte le tab della Colonna Centrale.\n\n' +
+                    'La colonna centrale (Calendario, Notizie e Giochino) verrà rimossa dalla pagina ' +
+                    'e le altre due colonne si espanderanno per occupare lo spazio.\n\n' +
+                    'Puoi sempre riattivarle da Impostazioni > Colonna Centrale.\n\n' +
+                    'Vuoi continuare?'
+                );
+                if (!proceed) {
+                    return;
+                }
+            }
+        }
+
         localStorage.setItem('central_tabs_enabled', JSON.stringify(enabledCentralTabs));
 
         // Se l'utente attiva almeno uno dei widget della colonna sinistra, salva widgets_activated_once
@@ -1157,7 +1189,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         settingsModal.style.display = 'none';
 
-        // Reload page to apply changes dynamically
+        // Applica le modifiche. La colonna centrale si aggiorna senza reload tramite
+        // CentralTabs.refresh(); il reload resta per il resto dei moduli che non
+        // espongono un refresh (widget sinistra, footer Spotify, ricerca).
+        if (typeof window.CentralTabs?.refresh === 'function') {
+            window.CentralTabs.refresh();
+        }
         window.location.reload();
     });
 
@@ -1226,6 +1263,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 iframes.splice(index, 1);
                 localStorage.setItem('central_tabs_iframes', JSON.stringify(iframes));
                 renderIframeSitesList();
+                if (typeof window.CentralTabs?.refresh === 'function') {
+                    window.CentralTabs.refresh();
+                }
             });
             
             listContainer.appendChild(item);
@@ -1273,6 +1313,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 feeds.splice(index, 1);
                 localStorage.setItem('rss_feeds', JSON.stringify(feeds));
                 renderRssFeedsList();
+                if (typeof window.CentralTabs?.refresh === 'function') {
+                    window.CentralTabs.refresh();
+                }
             });
             
             listContainer.appendChild(item);
@@ -1314,6 +1357,9 @@ document.addEventListener('DOMContentLoaded', () => {
             nameInput.value = '';
             urlInput.value = '';
             renderIframeSitesList();
+            if (typeof window.CentralTabs?.refresh === 'function') {
+                window.CentralTabs.refresh();
+            }
         });
     }
 
@@ -1351,6 +1397,9 @@ document.addEventListener('DOMContentLoaded', () => {
             nameInput.value = '';
             urlInput.value = '';
             renderRssFeedsList();
+            if (typeof window.CentralTabs?.refresh === 'function') {
+                window.CentralTabs.refresh();
+            }
         });
     }
 

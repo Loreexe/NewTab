@@ -87,6 +87,16 @@
     display: none;
 }
 
+/* ==========================================================================
+   Colonna Centrale collassata: nessuna tab attiva (Impostazioni > Colonna
+   Centrale). .centro viene rimossa dal flexbox così le due colonne laterali
+   si dividono lo spazio; il To-Do vive dentro .centro e viene nascosto con essa.
+   ========================================================================== */
+body.central-column-collapsed .centro,
+body.central-column-collapsed #resizer-todo {
+    display: none !important;
+}
+
 /* RSS News Reader Style */
 .rss-container {
     display: flex;
