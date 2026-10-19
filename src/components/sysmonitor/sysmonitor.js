@@ -1,4 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
+    // Widget disabilitato: non serve inizializzare UI, API native e polling.
+    // Le Impostazioni ricaricano la pagina quando il flag cambia.
+    if (AppStorage.getItem('sysmonitor_enabled') !== 'true') return;
+
     const gearBtn = document.getElementById('sysmonitor-gear-btn');
     const configPanel = document.getElementById('sysmonitor-config');
     const saveConfigBtn = document.getElementById('sysmonitor-save-config-btn');
@@ -11,9 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load configurations (default: CPU, RAM, Battery are true)
     let config = {
-        cpu: localStorage.getItem('sys_show_cpu') !== 'false',
-        ram: localStorage.getItem('sys_show_ram') !== 'false',
-        battery: localStorage.getItem('sys_show_battery') !== 'false'
+        cpu: AppStorage.getItem('sys_show_cpu') !== 'false',
+        ram: AppStorage.getItem('sys_show_ram') !== 'false',
+        battery: AppStorage.getItem('sys_show_battery') !== 'false'
     };
 
     // Set checkboxes initial state
@@ -36,9 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
             config.ram = showRamCb ? showRamCb.checked : true;
             config.battery = showBatteryCb ? showBatteryCb.checked : true;
 
-            localStorage.setItem('sys_show_cpu', config.cpu);
-            localStorage.setItem('sys_show_ram', config.ram);
-            localStorage.setItem('sys_show_battery', config.battery);
+            AppStorage.setItem('sys_show_cpu', config.cpu);
+            AppStorage.setItem('sys_show_ram', config.ram);
+            AppStorage.setItem('sys_show_battery', config.battery);
 
             configPanel.style.display = 'none';
             buildMetricsUI();
@@ -58,16 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Build circular gauges layout
     function buildMetricsUI() {
         if (!metricsContainer) return;
-        metricsContainer.innerHTML = '';
+        metricsContainer.textContent = '';
 
         const activeMetrics = Object.keys(config).filter(key => config[key]);
 
         if (activeMetrics.length === 0) {
-            metricsContainer.innerHTML = `
-                <div style="grid-column: 1 / -1; font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; padding: 12px;">
-                    Nessun indicatore selezionato. Clicca su ⚙️ per configurare.
-                </div>
-            `;
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.cssText = "grid-column: 1 / -1; font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; padding: 12px;";
+            emptyDiv.textContent = "Nessun indicatore selezionato. Clicca su ⚙️ per configurare.";
+            metricsContainer.appendChild(emptyDiv);
             return;
         }
 
@@ -79,20 +82,17 @@ document.addEventListener('DOMContentLoaded', () => {
             itemDiv.className = 'metric-circle-item';
             itemDiv.id = `metric-item-${metric}`;
 
-            let icon = '';
+            let icon = window.AppIcons ? window.AppIcons.getSvg(metric) : '';
             let name = 'Indicatore';
 
             switch (metric) {
                 case 'cpu':
-                    icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line><line x1="20" y1="9" x2="23" y2="9"></line><line x1="20" y1="15" x2="23" y2="15"></line><line x1="1" y1="9" x2="4" y2="9"></line><line x1="1" y1="15" x2="4" y2="15"></line></svg>`;
                     name = 'CPU';
                     break;
                 case 'ram':
-                    icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="9" width="20" height="6" rx="1"></rect><path d="M5 15v2M9 15v2M13 15v2M17 15v2M21 15v2M3 15v2"></path><rect x="4" y="11" width="3" height="3" rx="0.5"></rect><rect x="8" y="11" width="3" height="3" rx="0.5"></rect><rect x="12" y="11" width="3" height="3" rx="0.5"></rect><rect x="16" y="11" width="3" height="3" rx="0.5"></rect></svg>`;
                     name = 'RAM';
                     break;
                 case 'battery':
-                    icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="18" height="12" rx="2" ry="2"></rect><line x1="23" y1="11" x2="23" y2="13"></line></svg>`;
                     name = 'Batt';
                     break;
             }

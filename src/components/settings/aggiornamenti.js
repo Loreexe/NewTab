@@ -1,6 +1,6 @@
 // Controllo aggiornamenti: confronta la versione installata (manifest) con quella
 // presente su GitHub (manifest del branch main) e propone il download dello ZIP.
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     const REPO_OWNER = 'Loreexe';
     const REPO_NAME = 'NewTab';
     const REPO_URL = `https://github.com/${REPO_OWNER}/${REPO_NAME}`;
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function readCache() {
         try {
-            const parsed = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+            const parsed = JSON.parse(AppStorage.getItem(CACHE_KEY) || 'null');
             if (parsed && typeof parsed.ts === 'number' && typeof parsed.remoteVersion === 'string') {
                 return parsed;
             }
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function writeCache(remoteVersion) {
         try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), remoteVersion }));
+            AppStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), remoteVersion }));
         } catch (e) { /* ignore */ }
     }
 

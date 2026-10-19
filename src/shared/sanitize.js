@@ -90,5 +90,25 @@
         }
     }
 
-    window.AppSanitize = { escapeHtml, sanitizeMarkdownHtml };
+    function setSafeHtml(el, dirtyHtml) {
+        if (!el) return;
+        el.innerHTML = sanitizeMarkdownHtml(dirtyHtml);
+    }
+
+    function createSafeElement(tag, attrs = {}, children = []) {
+        const el = document.createElement(tag);
+        Object.entries(attrs).forEach(([k, v]) => {
+            if (k === 'className') el.className = v;
+            else if (k === 'style' && typeof v === 'string') el.style.cssText = v;
+            else if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+            else el.setAttribute(k, v);
+        });
+        (Array.isArray(children) ? children : [children]).forEach(child => {
+            if (typeof child === 'string') el.appendChild(document.createTextNode(child));
+            else if (child instanceof Node) el.appendChild(child);
+        });
+        return el;
+    }
+
+    window.AppSanitize = { escapeHtml, sanitizeMarkdownHtml, setSafeHtml, createSafeElement };
 })();

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     // ── Costanti & Configurazione ──
     const LOCAL_CALENDAR_ID = 'local';
     const LOCAL_CALENDAR = {
@@ -18,13 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // State variables
-    let currentView = localStorage.getItem('calendar_current_view') || 'week';
+    let currentView = AppStorage.getItem('calendar_current_view') || 'week';
     let currentDate = new Date();
     let calendars = [LOCAL_CALENDAR];
     let events = [];
     let activeCalendars = null;
     try {
-        const storedActive = localStorage.getItem('calendar_active_ids');
+        const storedActive = AppStorage.getItem('calendar_active_ids');
         if (storedActive) {
             activeCalendars = JSON.parse(storedActive);
             if (!Array.isArray(activeCalendars)) activeCalendars = null;
@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Local Storage Events Storage ──
     function loadLocalEvents() {
         try {
-            const raw = localStorage.getItem('calendar_local_events');
+            const raw = AppStorage.getItem('calendar_local_events');
             return raw ? JSON.parse(raw) : [];
         } catch (e) {
             console.error("loadLocalEvents Error:", e);
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveLocalEvents(items) {
         try {
-            localStorage.setItem('calendar_local_events', JSON.stringify(items));
+            AppStorage.setItem('calendar_local_events', JSON.stringify(items));
         } catch (e) {
             console.error("saveLocalEvents Error:", e);
         }
@@ -228,22 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const REVOKE_ENDPOINT = "https://oauth2.googleapis.com/revoke";
     const TOKEN_BUFFER_MS = 5 * 60 * 1000;
 
-    // PKCE helper: stringa casuale crittograficamente sicura
-    function generateRandomString(length) {
-        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-        const values = crypto.getRandomValues(new Uint8Array(length));
-        return Array.from(values).map((x) => possible[x % possible.length]).join('');
-    }
-
-    // PKCE helper: code challenge S256 dal verifier
-    async function generateCodeChallenge(codeVerifier) {
-        const encoder = new TextEncoder();
-        const digest = await crypto.subtle.digest('SHA-256', encoder.encode(codeVerifier));
-        return btoa(String.fromCharCode(...new Uint8Array(digest)))
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
-    }
+    // Helper PKCE condivisi con Spotify (src/shared/pkce.js).
+    const { generateRandomString, generateCodeChallenge } = window.AppPkce;
 
     // ── Stato di connessione (per UI e diagnostica) ──
     const googleState = {
@@ -260,17 +246,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // True se esiste una sessione utilizzabile (token valido o refresh token)
     function isGoogleCalendarConnected() {
         return Boolean(
-            localStorage.getItem('google_calendar_refresh_token')
-            || (localStorage.getItem('google_calendar_access_token') && localStorage.getItem('google_calendar_expires_at'))
+            AppStorage.getItem('google_calendar_refresh_token')
+            || (AppStorage.getItem('google_calendar_access_token') && AppStorage.getItem('google_calendar_expires_at'))
         );
     }
 
     // Pulisce TUTTE le credenziali Google (evita stati incoerenti)
     function clearGoogleCredentials() {
-        localStorage.removeItem('google_calendar_access_token');
-        localStorage.removeItem('google_calendar_expires_at');
-        localStorage.removeItem('google_calendar_refresh_token');
-        localStorage.removeItem('google_code_verifier');
+        AppStorage.removeItem('google_calendar_access_token');
+        AppStorage.removeItem('google_calendar_expires_at');
+        AppStorage.removeItem('google_calendar_refresh_token');
     }
 
     function buildAuthErrorMessage(errorMsg) {
@@ -323,18 +308,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Salva i token; sovrascrive il refresh token solo se Google lo rinvia
     function saveGoogleTokens(data) {
         if (data.access_token) {
-            localStorage.setItem('google_calendar_access_token', data.access_token);
+            AppStorage.setItem('google_calendar_access_token', data.access_token);
         }
         if (data.refresh_token) {
-            localStorage.setItem('google_calendar_refresh_token', data.refresh_token);
+            AppStorage.setItem('google_calendar_refresh_token', data.refresh_token);
         }
         const expiresIn = Number.isFinite(data.expires_in) ? data.expires_in : 3600;
-        localStorage.setItem('google_calendar_expires_at', (Date.now() + (expiresIn * 1000)).toString());
+        AppStorage.setItem('google_calendar_expires_at', (Date.now() + (expiresIn * 1000)).toString());
     }
 
     async function exchangeCodeForToken(code, codeVerifier) {
-        const clientId = (localStorage.getItem('google_client_id') || '').trim();
-        const clientSecret = (localStorage.getItem('google_client_secret') || '').trim();
+        const clientId = (AppStorage.getItem('google_client_id') || '').trim();
+        const clientSecret = (AppStorage.getItem('google_client_secret') || '').trim();
 
         const params = {
             client_id: clientId,
@@ -361,9 +346,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function refreshAccessToken() {
-        const clientId = (localStorage.getItem('google_client_id') || '').trim();
-        const clientSecret = (localStorage.getItem('google_client_secret') || '').trim();
-        const refreshToken = localStorage.getItem('google_calendar_refresh_token');
+        const clientId = (AppStorage.getItem('google_client_id') || '').trim();
+        const clientSecret = (AppStorage.getItem('google_client_secret') || '').trim();
+        const refreshToken = AppStorage.getItem('google_calendar_refresh_token');
         if (!refreshToken || !clientId) return null;
 
         try {
@@ -396,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             saveGoogleTokens(data);
             setGoogleState('connected', '');
-            return data.access_token || localStorage.getItem('google_calendar_access_token');
+            return data.access_token || AppStorage.getItem('google_calendar_access_token');
         } catch (error) {
             console.error("refreshAccessToken Error:", error);
             return null;
@@ -408,8 +393,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let isGoogleAuthInProgress = false;
 
     async function getValidToken() {
-        const token = localStorage.getItem('google_calendar_access_token');
-        const expiresAt = parseInt(localStorage.getItem('google_calendar_expires_at'), 10);
+        const token = AppStorage.getItem('google_calendar_access_token');
+        const expiresAt = parseInt(AppStorage.getItem('google_calendar_expires_at'), 10);
 
         if (token && Number.isFinite(expiresAt) && Date.now() < (expiresAt - TOKEN_BUFFER_MS)) {
             return token;
@@ -430,8 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return null;
         }
 
-        const clientId = (localStorage.getItem('google_client_id') || '').trim();
-        const clientSecret = (localStorage.getItem('google_client_secret') || '').trim();
+        const clientId = (AppStorage.getItem('google_client_id') || '').trim();
+        const clientSecret = (AppStorage.getItem('google_client_secret') || '').trim();
 
         if (!clientId) {
             alert("Per favore, configura prima il tuo Google Client ID nelle Impostazioni (icona ⚙️ in alto a destra).");
@@ -457,7 +442,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         isGoogleAuthInProgress = true;
         const codeVerifier = generateRandomString(128);
-        localStorage.setItem('google_code_verifier', codeVerifier);
         const codeChallenge = await generateCodeChallenge(codeVerifier);
 
         // access_type=offline + prompt=consent => Google rilascia un refresh token
@@ -489,7 +473,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (lastErr || !redirectUrl) {
                     const errorMsg = lastErr || "Nessun URL di reindirizzamento restituito.";
                     console.warn("Google auth flow interrotto:", errorMsg);
-                    localStorage.removeItem('google_code_verifier');
                     const friendly = buildAuthErrorMessage(errorMsg);
                     if (friendly) {
                         setGoogleState('error', 'Collegamento a Google Calendar non riuscito.');
@@ -505,7 +488,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     url = new URL(redirectUrl);
                 } catch (e) {
-                    localStorage.removeItem('google_code_verifier');
                     setGoogleState('error', 'Risposta di autorizzazione non valida.');
                     finish(null);
                     return;
@@ -515,7 +497,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (oauthErr) {
                     const desc = url.searchParams.get('error_description') || oauthErr;
                     console.warn("OAuth rifiutato:", desc);
-                    localStorage.removeItem('google_code_verifier');
                     const friendly = buildAuthErrorMessage(desc);
                     if (friendly) {
                         setGoogleState('error', 'Collegamento a Google Calendar non riuscito.');
@@ -529,7 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const code = url.searchParams.get('code');
                 if (!code) {
-                    localStorage.removeItem('google_code_verifier');
                     setGoogleState('error', 'Google non ha restituito il codice di autorizzazione.');
                     finish(null);
                     return;
@@ -538,8 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const data = await exchangeCodeForToken(code, codeVerifier);
                     saveGoogleTokens(data);
-                    localStorage.removeItem('google_code_verifier');
-                    if (!localStorage.getItem('google_calendar_refresh_token')) {
+                    if (!AppStorage.getItem('google_calendar_refresh_token')) {
                         setGoogleState('error', 'Google non ha rilasciato un refresh token: ricollegati.');
                         alert("Collegamento riuscito ma Google non ha rilasciato un refresh token.\n"
                             + "La sincronizzazione si arresterà a breve. Ricollegati e, se persiste, verifica\n"
@@ -551,7 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     finish(data.access_token || null);
                 } catch (error) {
                     console.error("Scambio codice/token fallito:", error);
-                    localStorage.removeItem('google_code_verifier');
                     setGoogleState('error', 'Scambio del token non riuscito: ricollegati.');
                     alert("Errore durante lo scambio del codice di autorizzazione:\n" + error.message);
                     finish(null);
@@ -561,8 +539,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function googleLogout() {
-        const token = localStorage.getItem('google_calendar_access_token')
-            || localStorage.getItem('google_calendar_refresh_token');
+        const token = AppStorage.getItem('google_calendar_access_token')
+            || AppStorage.getItem('google_calendar_refresh_token');
         clearGoogleCredentials();
         setGoogleState('disconnected', '');
 
@@ -935,7 +913,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     activeCalendars = activeCalendars.filter(id => id !== cal.id);
                 }
 
-                localStorage.setItem('calendar_active_ids', JSON.stringify(activeCalendars));
+                AppStorage.setItem('calendar_active_ids', JSON.stringify(activeCalendars));
                 loadEvents();
             });
 
@@ -1623,7 +1601,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => {
             const view = btn.getAttribute('data-view');
             currentView = view;
-            localStorage.setItem('calendar_current_view', view);
+            AppStorage.setItem('calendar_current_view', view);
             renderHeader();
             loadEvents();
         });
@@ -1867,7 +1845,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     salvati: activeCalendars, disponibili: reconciled
                 });
                 activeCalendars = reconciled;
-                localStorage.setItem('calendar_active_ids', JSON.stringify(activeCalendars));
+                AppStorage.setItem('calendar_active_ids', JSON.stringify(activeCalendars));
             }
         }
 
@@ -1887,7 +1865,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let refreshInFlight = false;
     let visibilityListenerBound = false;
 
+    function isCalendarTabEnabled() {
+        try {
+            const raw = AppStorage.getItem('central_tabs_enabled');
+            if (raw === null) return true;
+            const tabs = JSON.parse(raw);
+            return !Array.isArray(tabs) || tabs.includes('calendar');
+        } catch (e) {
+            return true;
+        }
+    }
+
     async function refreshGoogleData() {
+        if (document.hidden) return;
+        if (!isCalendarTabEnabled()) return;
         if (refreshInFlight) return;
         if (!isGoogleCalendarConnected()) return;
         // Non interrogare l'API se non ci sono calendari Google attivi
@@ -1905,7 +1896,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startAutoRefresh() {
         if (autoRefreshTimer) clearInterval(autoRefreshTimer);
-        autoRefreshTimer = setInterval(refreshGoogleData, AUTO_REFRESH_MS);
+        autoRefreshTimer = null;
+
+        // Se la tab Calendario è disabilitata non serve un timer periodico:
+        // le Impostazioni ricaricano la pagina quando il flag cambia.
+        if (isCalendarTabEnabled()) {
+            autoRefreshTimer = setInterval(refreshGoogleData, AUTO_REFRESH_MS);
+        }
 
         if (!visibilityListenerBound) {
             visibilityListenerBound = true;

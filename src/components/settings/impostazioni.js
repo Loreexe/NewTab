@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     // UI elements
     const settingsBtn = document.getElementById('settings-btn');
     const settingsModal = document.getElementById('settings-modal');
@@ -132,38 +132,50 @@ document.addEventListener('DOMContentLoaded', () => {
     let draggedLinkCatId = null;
     let draggedCatIndex = null;
 
-    // Helper: escape HTML for dialog fields
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+    // Helper condiviso: evita una seconda implementazione dell'escaping HTML.
+    const escapeHtml = window.AppSanitize.escapeHtml;
+    // Helper: dopo la rimozione di <all_urls> dal manifest, gli endpoint chat personalizzati
+    // (non presenti in host_permissions) richiedono un permesso opzionale concesso dall'utente.
+    function requestChatEndpointPermission(endpoint) {
+        try {
+            if (typeof chrome === 'undefined' || !chrome.permissions || !chrome.permissions.request) return;
+            const url = new URL(endpoint);
+            if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
+            const origins = [`${url.protocol}//${url.hostname}/*`];
+            chrome.permissions.request({ origins }, (granted) => {
+                if (chrome.runtime.lastError) {
+                    console.warn("Richiesta permesso endpoint chat fallita:", chrome.runtime.lastError.message);
+                } else if (!granted) {
+                    console.warn("Permesso per l'endpoint chat non concesso:", origins[0]);
+                }
+            });
+        } catch (e) {
+            console.warn("Endpoint chat non valido, permesso non richiesto:", e);
+        }
     }
+
 
     // 1. Data Loading & Migration (supports old key-value object to categories array migration)
     function loadCategoriesData() {
-        if (!localStorage.getItem('custom_links')) {
-            localStorage.setItem('custom_links', JSON.stringify(window.DEFAULT_CATEGORIES));
+        if (!AppStorage.getItem('custom_links')) {
+            AppStorage.setItem('custom_links', JSON.stringify(window.DEFAULT_CATEGORIES));
             return window.DEFAULT_CATEGORIES;
         }
 
         let loaded = null;
         try {
-            loaded = JSON.parse(localStorage.getItem('custom_links'));
+            loaded = JSON.parse(AppStorage.getItem('custom_links'));
         } catch (e) {
             console.error("Errore nel parsing dei link salvati, ripristino di default", e);
             loaded = window.DEFAULT_CATEGORIES;
-            localStorage.setItem('custom_links', JSON.stringify(loaded));
+            AppStorage.setItem('custom_links', JSON.stringify(loaded));
             return loaded;
         }
 
         // Migration from old flat object format {apps: [], ai: [], others: []} to array of categories [{id, title, links}]
         if (!loaded) {
             loaded = window.DEFAULT_CATEGORIES;
-            localStorage.setItem('custom_links', JSON.stringify(loaded));
+            AppStorage.setItem('custom_links', JSON.stringify(loaded));
             return loaded;
         }
 
@@ -174,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { id: "ai", title: "Strumenti AI", links: loaded.ai || [] },
                 { id: "others", title: "Altre Applicazioni", links: loaded.others || [] }
             ];
-            localStorage.setItem('custom_links', JSON.stringify(migrated));
+            AppStorage.setItem('custom_links', JSON.stringify(migrated));
             return migrated;
         }
 
@@ -273,12 +285,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const file = e.target.files[0];
                 if (!file) return;
                 
-                fileBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="spin-icon"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+                fileBtn.innerHTML = window.AppIcons.getSvg('spinner', { width: 16, height: 16 });
                 fileBtn.style.pointerEvents = 'none';
                 
                 optimizeImage(file, (optimizedBase64) => {
                     iconInput.value = optimizedBase64;
-                    fileBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>`;
+                    fileBtn.innerHTML = window.AppIcons.getSvg('upload', { width: 16, height: 16 });
                     fileBtn.style.pointerEvents = 'auto';
                 });
             });
@@ -318,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveCategoriesAndRender() {
-        localStorage.setItem('custom_links', JSON.stringify(currentCategories));
+        AppStorage.setItem('custom_links', JSON.stringify(currentCategories));
         renderSidebar();
     }
 
@@ -375,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         currentCategories = newCategories;
-        localStorage.setItem('custom_links', JSON.stringify(currentCategories));
+        AppStorage.setItem('custom_links', JSON.stringify(currentCategories));
         renderSidebar();
     }
 
@@ -395,9 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const editToggleBtn = document.createElement('button');
             editToggleBtn.className = isEditMode ? 'edit-mode-btn active' : 'edit-mode-btn';
-            editToggleBtn.innerHTML = isEditMode ? 
-                `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : 
-                `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`;
+            editToggleBtn.innerHTML = isEditMode ? (window.AppIcons ? window.AppIcons.getSvg('check', { width: 14, height: 14 }) : '') : (window.AppIcons ? window.AppIcons.getSvg('editMode', { width: 14, height: 14 }) : '');
             editToggleBtn.title = isEditMode ? 'Esci dalla modifica' : 'Modifica collegamenti';
             editToggleBtn.addEventListener('click', toggleEditModeHandler);
             emptyHeader.appendChild(editToggleBtn);
@@ -474,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const dragHandle = document.createElement('span');
                 dragHandle.className = 'category-drag-handle';
-                dragHandle.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" style="opacity: 0.5; vertical-align: middle;"><circle cx="9" cy="5" r="1.5" fill="currentColor"></circle><circle cx="9" cy="12" r="1.5" fill="currentColor"></circle><circle cx="9" cy="19" r="1.5" fill="currentColor"></circle><circle cx="15" cy="5" r="1.5" fill="currentColor"></circle><circle cx="15" cy="12" r="1.5" fill="currentColor"></circle><circle cx="15" cy="19" r="1.5" fill="currentColor"></circle></svg>`;
+                dragHandle.innerHTML = window.AppIcons.getSvg('drag', { width: 14, height: 14 });
                 headerDiv.appendChild(dragHandle);
 
                 const titleSpan = document.createElement('span');
@@ -488,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Edit Category
                 const editCatBtn = document.createElement('button');
                 editCatBtn.className = 'category-action-btn edit tooltip';
-                editCatBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg><span class="tooltiptext">Rinomina</span>`;
+                editCatBtn.innerHTML = window.AppIcons.getSvg('edit', { width: 14, height: 14 }) + '<span class="tooltiptext">Rinomina</span>';
                 editCatBtn.title = '';
                 editCatBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -517,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Delete Category
                 const deleteCatBtn = document.createElement('button');
                 deleteCatBtn.className = 'category-action-btn delete tooltip';
-                deleteCatBtn.innerHTML = `<svg viewBox="0 0 20 20" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M8.78842 5.03866C8.86656 4.96052 8.97254 4.91663 9.08305 4.91663H11.4164C11.5269 4.91663 11.6329 4.96052 11.711 5.03866C11.7892 5.11681 11.833 5.22279 11.833 5.33329V5.74939H8.66638V5.33329C8.66638 5.22279 8.71028 5.11681 8.78842 5.03866ZM7.16638 5.74939V5.33329C7.16638 4.82496 7.36832 4.33745 7.72776 3.978C8.08721 3.61856 8.57472 3.41663 9.08305 3.41663H11.4164C11.9247 3.41663 12.4122 3.61856 12.7717 3.978C13.1311 4.33745 13.333 4.82496 13.333 5.33329V5.74939H15.5C15.9142 5.74939 16.25 6.08518 16.25 6.49939C16.25 6.9136 15.9142 7.24939 15.5 7.24939H15.0105L14.2492 14.7095C14.2382 15.2023 14.0377 15.6726 13.6883 16.0219C13.3289 16.3814 12.8414 16.5833 12.333 16.5833H8.16638C7.65805 16.5833 7.17054 16.3814 6.81109 16.0219C6.46176 15.6726 6.2612 15.2023 6.25019 14.7095L5.48896 7.24939H5C4.58579 7.24939 4.25 6.9136 4.25 6.49939C4.25 6.08518 4.58579 5.74939 5 5.74939H6.16667H7.16638ZM7.91638 7.24996H12.583H13.5026L12.7536 14.5905C12.751 14.6158 12.7497 14.6412 12.7497 14.6666C12.7497 14.7771 12.7058 14.8831 12.6277 14.9613C12.5495 15.0394 12.4436 15.0833 12.333 15.0833H8.16638C8.05588 15.0833 7.94989 15.0394 7.87175 14.9613C7.79361 14.8831 7.74972 14.7771 7.74972 14.6666C7.74972 14.6412 7.74842 14.6158 7.74584 14.5905L6.99681 7.24996H7.91638Z"></path></svg><span class="tooltiptext">Elimina Categoria</span>`;
+                deleteCatBtn.innerHTML = window.AppIcons.getSvg('trash', { width: 14, height: 14 }) + '<span class="tooltiptext">Elimina Categoria</span>';
                 deleteCatBtn.title = '';
                 deleteCatBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -539,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (catIndex === 0) {
                     const editToggleBtn = document.createElement('button');
                     editToggleBtn.className = 'edit-mode-btn active';
-                    editToggleBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+                    editToggleBtn.innerHTML = window.AppIcons.getSvg('check', { width: 14, height: 14 });
                     editToggleBtn.title = 'Esci dalla modifica';
                     editToggleBtn.style.marginLeft = '8px';
                     editToggleBtn.addEventListener('click', toggleEditModeHandler);
@@ -567,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (catIndex === 0) {
                         const editToggleBtn = document.createElement('button');
                         editToggleBtn.className = 'edit-mode-btn';
-                        editToggleBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`;
+                        editToggleBtn.innerHTML = window.AppIcons.getSvg('editMode', { width: 14, height: 14 });
                         editToggleBtn.title = 'Modifica collegamenti';
                         editToggleBtn.style.marginLeft = '8px';
                         editToggleBtn.addEventListener('click', toggleEditModeHandler);
@@ -657,7 +667,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Edit button on link overlay (three dots)
                     const editBtn = document.createElement('button');
                     editBtn.className = 'app-action-btn edit tooltip';
-                    editBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg><span class="tooltiptext">Modifica</span>`;
+                    editBtn.innerHTML = window.AppIcons.getSvg('edit', { width: 14, height: 14 }) + '<span class="tooltiptext">Modifica</span>';
                     editBtn.title = '';
                     editBtn.addEventListener('click', (e) => {
                         e.preventDefault();
@@ -679,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <input type="text" id="dialog-link-icon" class="dialog-input" style="flex-grow: 1;" value="${escapeHtml(link.icon || '')}" placeholder="Inserisci URL o carica file" />
                                     <input type="file" id="dialog-link-file" style="display: none;" accept="image/*" />
                                     <button type="button" id="dialog-link-file-btn" class="dialog-cancel-btn" style="margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 6px; box-sizing: border-box; flex-shrink: 0;" title="Carica file locale">
-                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                                        ${window.AppIcons.getSvg('upload', { width: 16, height: 16 })}
                                     </button>
                                 </div>
                             </div>
@@ -714,7 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Delete button on link overlay (red X)
                     const deleteBtn = document.createElement('button');
                     deleteBtn.className = 'app-action-btn delete tooltip';
-                    deleteBtn.innerHTML = `<svg viewBox="0 0 20 20" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="M8.78842 5.03866C8.86656 4.96052 8.97254 4.91663 9.08305 4.91663H11.4164C11.5269 4.91663 11.6329 4.96052 11.711 5.03866C11.7892 5.11681 11.833 5.22279 11.833 5.33329V5.74939H8.66638V5.33329C8.66638 5.22279 8.71028 5.11681 8.78842 5.03866ZM7.16638 5.74939V5.33329C7.16638 4.82496 7.36832 4.33745 7.72776 3.978C8.08721 3.61856 8.57472 3.41663 9.08305 3.41663H11.4164C11.9247 3.41663 12.4122 3.61856 12.7717 3.978C13.1311 4.33745 13.333 4.82496 13.333 5.33329V5.74939H15.5C15.9142 5.74939 16.25 6.08518 16.25 6.49939C16.25 6.9136 15.9142 7.24939 15.5 7.24939H15.0105L14.2492 14.7095C14.2382 15.2023 14.0377 15.6726 13.6883 16.0219C13.3289 16.3814 12.8414 16.5833 12.333 16.5833H8.16638C7.65805 16.5833 7.17054 16.3814 6.81109 16.0219C6.46176 15.6726 6.2612 15.2023 6.25019 14.7095L5.48896 7.24939H5C4.58579 7.24939 4.25 6.9136 4.25 6.49939C4.25 6.08518 4.58579 5.74939 5 5.74939H6.16667H7.16638ZM7.91638 7.24996H12.583H13.5026L12.7536 14.5905C12.751 14.6158 12.7497 14.6412 12.7497 14.6666C12.7497 14.7771 12.7058 14.8831 12.6277 14.9613C12.5495 15.0394 12.4436 15.0833 12.333 15.0833H8.16638C8.05588 15.0833 7.94989 15.0394 7.87175 14.9613C7.79361 14.8831 7.74972 14.7771 7.74972 14.6666C7.74972 14.6412 7.74842 14.6158 7.74584 14.5905L6.99681 7.24996H7.91638ZM7.91638 7.24996H12.583H13.5026L12.7536 14.5905C12.751 14.6158 12.7497 14.6412 12.7497 14.6666C12.7497 14.7771 12.7058 14.8831 12.6277 14.9613C12.5495 15.0394 12.4436 15.0833 12.333 15.0833H8.16638C8.05588 15.0833 7.94989 15.0394 7.87175 14.9613C7.79361 14.8831 7.74972 14.7771 7.74972 14.6666C7.74972 14.6412 7.74842 14.6158 7.74584 14.5905L6.99681 7.24996H7.91638Z"></path></svg><span class="tooltiptext">Elimina Link</span>`;
+                    deleteBtn.innerHTML = (window.AppIcons ? window.AppIcons.getSvg('trash', { width: 14, height: 14 }) : '') + '<span class="tooltiptext">Elimina Link</span>';
                     deleteBtn.title = '';
                     deleteBtn.addEventListener('click', (e) => {
                         e.preventDefault();
@@ -772,7 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const plusBtn = document.createElement('div');
                 plusBtn.className = 'add-link-btn-sidebar';
-                plusBtn.innerHTML = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
+                plusBtn.innerHTML = window.AppIcons ? window.AppIcons.getSvg('plus', { width: 16, height: 16, strokeWidth: 3 }) : '';
                 plusBtn.title = 'Aggiungi Link';
                 plusBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -793,7 +803,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <input type="text" id="dialog-link-icon" class="dialog-input" style="flex-grow: 1;" placeholder="es. images/wikipedia.svg" />
                                 <input type="file" id="dialog-link-file" style="display: none;" accept="image/*" />
                                 <button type="button" id="dialog-link-file-btn" class="dialog-cancel-btn" style="margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 6px; box-sizing: border-box; flex-shrink: 0;" title="Carica file locale">
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                                    ${window.AppIcons.getSvg('upload', { width: 16, height: 16 })}
                                 </button>
                             </div>
                         </div>
@@ -843,7 +853,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const addCatBtn = document.createElement('button');
             addCatBtn.className = 'add-category-btn-sidebar';
-            addCatBtn.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> Aggiungi Categoria`;
+            addCatBtn.innerHTML = (window.AppIcons ? window.AppIcons.getSvg('plus', { width: 14, height: 14, strokeWidth: 3, style: 'vertical-align: middle; margin-right: 4px;' }) : '') + ' Aggiungi Categoria';
             addCatBtn.addEventListener('click', () => {
                 showEditDialog(
                     "Aggiungi Categoria",
@@ -900,67 +910,67 @@ document.addEventListener('DOMContentLoaded', () => {
     settingsBtn.addEventListener('click', () => {
         // Load Widget toggles state
         if (weatherEnabledToggle) {
-            weatherEnabledToggle.checked = localStorage.getItem('weather_enabled') === 'true';
+            weatherEnabledToggle.checked = AppStorage.getItem('weather_enabled') === 'true';
             weatherEnabledToggle.dispatchEvent(new Event('change'));
         }
         if (chatEnabledToggle) {
-            chatEnabledToggle.checked = localStorage.getItem('chat_enabled') === 'true';
+            chatEnabledToggle.checked = AppStorage.getItem('chat_enabled') === 'true';
             chatEnabledToggle.dispatchEvent(new Event('change'));
         }
         if (spotifyEnabledToggle) {
-            spotifyEnabledToggle.checked = localStorage.getItem('spotify_enabled') !== 'false';
+            spotifyEnabledToggle.checked = AppStorage.getItem('spotify_enabled') !== 'false';
             spotifyEnabledToggle.dispatchEvent(new Event('change'));
         }
         if (pomodoroEnabledToggle) {
-            pomodoroEnabledToggle.checked = localStorage.getItem('pomodoro_enabled') === 'true';
+            pomodoroEnabledToggle.checked = AppStorage.getItem('pomodoro_enabled') === 'true';
             pomodoroEnabledToggle.dispatchEvent(new Event('change'));
         }
         if (countdownEnabledToggle) {
-            countdownEnabledToggle.checked = localStorage.getItem('countdown_enabled') === 'true';
+            countdownEnabledToggle.checked = AppStorage.getItem('countdown_enabled') === 'true';
             countdownEnabledToggle.dispatchEvent(new Event('change'));
         }
         if (sysmonitorEnabledToggle) {
-            sysmonitorEnabledToggle.checked = localStorage.getItem('sysmonitor_enabled') === 'true';
+            sysmonitorEnabledToggle.checked = AppStorage.getItem('sysmonitor_enabled') === 'true';
             sysmonitorEnabledToggle.dispatchEvent(new Event('change'));
         }
         if (stocksEnabledToggle) {
-            stocksEnabledToggle.checked = localStorage.getItem('stocks_enabled') === 'true';
+            stocksEnabledToggle.checked = AppStorage.getItem('stocks_enabled') === 'true';
             stocksEnabledToggle.dispatchEvent(new Event('change'));
         }
         if (converterEnabledToggle) {
-            converterEnabledToggle.checked = localStorage.getItem('converter_enabled') === 'true';
+            converterEnabledToggle.checked = AppStorage.getItem('converter_enabled') === 'true';
             converterEnabledToggle.dispatchEvent(new Event('change'));
         }
 
         if (chatProviderSelect) {
-            chatProviderSelect.value = localStorage.getItem('chat_provider') || 'openai';
+            chatProviderSelect.value = AppStorage.getItem('chat_provider') || 'openai';
         }
 
         if (chatModelInput) {
-            chatModelInput.value = localStorage.getItem('chat_model') || 'gpt-4o-mini';
+            chatModelInput.value = AppStorage.getItem('chat_model') || 'gpt-4o-mini';
         }
 
         if (chatEndpointInput) {
-            chatEndpointInput.value = localStorage.getItem('chat_endpoint') || 'https://api.openai.com/v1';
+            chatEndpointInput.value = AppStorage.getItem('chat_endpoint') || 'https://api.openai.com/v1';
         }
 
         const profileNameInput = document.getElementById('settings-profile-name');
         if (profileNameInput) {
-            profileNameInput.value = localStorage.getItem('profile_name') || '';
+            profileNameInput.value = AppStorage.getItem('profile_name') || '';
             profileNameInput.placeholder = 'es. Mario';
         }
 
         if (chatKeyInput) {
-            chatKeyInput.value = localStorage.getItem('chat_api_key') || localStorage.getItem('gemini_api_key') || '';
+            chatKeyInput.value = AppStorage.getItem('chat_api_key') || AppStorage.getItem('gemini_api_key') || '';
         }
-        weatherInput.value = localStorage.getItem('weather_api_key') || '';
-        latInput.value = localStorage.getItem('weather_lat') || DEFAULT_LAT;
-        lonInput.value = localStorage.getItem('weather_lon') || DEFAULT_LON;
+        weatherInput.value = AppStorage.getItem('weather_api_key') || '';
+        latInput.value = AppStorage.getItem('weather_lat') || DEFAULT_LAT;
+        lonInput.value = AppStorage.getItem('weather_lon') || DEFAULT_LON;
 
         // Load Spotify fields
         const spotifyClientIdInput = document.getElementById('settings-spotify-client-id');
         if (spotifyClientIdInput) {
-            spotifyClientIdInput.value = localStorage.getItem('spotify_client_id') || '';
+            spotifyClientIdInput.value = AppStorage.getItem('spotify_client_id') || '';
         }
 
         const spotifyRedirectUriInput = document.getElementById('settings-spotify-redirect-uri');
@@ -970,7 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const spotifyDisconnectContainer = document.getElementById('settings-spotify-disconnect-container');
         if (spotifyDisconnectContainer) {
-            const hasRefreshToken = localStorage.getItem('spotify_refresh_token');
+            const hasRefreshToken = AppStorage.getItem('spotify_refresh_token');
             spotifyDisconnectContainer.style.display = hasRefreshToken ? 'block' : 'none';
         }
 
@@ -978,12 +988,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Load Google Calendar fields
         const googleClientIdInput = document.getElementById('settings-google-client-id');
         if (googleClientIdInput) {
-            googleClientIdInput.value = localStorage.getItem('google_client_id') || '';
+            googleClientIdInput.value = AppStorage.getItem('google_client_id') || '';
         }
 
         const googleClientSecretInput = document.getElementById('settings-google-client-secret');
         if (googleClientSecretInput) {
-            googleClientSecretInput.value = localStorage.getItem('google_client_secret') || '';
+            googleClientSecretInput.value = AppStorage.getItem('google_client_secret') || '';
         }
 
         const googleRedirectUriInput = document.getElementById('settings-google-redirect-uri');
@@ -996,14 +1006,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Usa l'helper esposto dal calendario per non disallinearsi dalla sidebar
             const connected = (typeof window.isGoogleCalendarConnected === 'function')
                 ? window.isGoogleCalendarConnected()
-                : Boolean(localStorage.getItem('google_calendar_access_token'));
+                : Boolean(AppStorage.getItem('google_calendar_access_token'));
             googleDisconnectContainer.style.display = connected ? 'block' : 'none';
         }
 
         // Array vuoto = utente ha disattivato tutto: deve restare vuoto, niente fallback.
         let enabledCentralTabs = [];
         try {
-            const storedCentralTabs = JSON.parse(localStorage.getItem('central_tabs_enabled'));
+            const storedCentralTabs = JSON.parse(AppStorage.getItem('central_tabs_enabled'));
             enabledCentralTabs = Array.isArray(storedCentralTabs) ? storedCentralTabs : ['calendar', 'rss', 'game'];
         } catch (e) {
             enabledCentralTabs = ['calendar', 'rss', 'game'];
@@ -1021,10 +1031,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tabGameCheckboxLoad) tabGameCheckboxLoad.checked = enabledCentralTabs.includes('game');
         
         if (defaultSearchEngineSelect) {
-            defaultSearchEngineSelect.value = localStorage.getItem('defaultSearchEngine') || 'google';
+            defaultSearchEngineSelect.value = AppStorage.getItem('defaultSearchEngine') || 'google';
         }
         if (aiSearchEnabledToggle) {
-            aiSearchEnabledToggle.checked = localStorage.getItem('aiSearchEnabled') !== 'false';
+            aiSearchEnabledToggle.checked = AppStorage.getItem('aiSearchEnabled') !== 'false';
         }
 
         renderIframeSitesList();
@@ -1051,28 +1061,28 @@ document.addEventListener('DOMContentLoaded', () => {
     saveBtn.addEventListener('click', () => {
         // Save Widget states
         if (weatherEnabledToggle) {
-            localStorage.setItem('weather_enabled', weatherEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('weather_enabled', weatherEnabledToggle.checked ? 'true' : 'false');
         }
         if (chatEnabledToggle) {
-            localStorage.setItem('chat_enabled', chatEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('chat_enabled', chatEnabledToggle.checked ? 'true' : 'false');
         }
         if (spotifyEnabledToggle) {
-            localStorage.setItem('spotify_enabled', spotifyEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('spotify_enabled', spotifyEnabledToggle.checked ? 'true' : 'false');
         }
         if (pomodoroEnabledToggle) {
-            localStorage.setItem('pomodoro_enabled', pomodoroEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('pomodoro_enabled', pomodoroEnabledToggle.checked ? 'true' : 'false');
         }
         if (countdownEnabledToggle) {
-            localStorage.setItem('countdown_enabled', countdownEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('countdown_enabled', countdownEnabledToggle.checked ? 'true' : 'false');
         }
         if (sysmonitorEnabledToggle) {
-            localStorage.setItem('sysmonitor_enabled', sysmonitorEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('sysmonitor_enabled', sysmonitorEnabledToggle.checked ? 'true' : 'false');
         }
         if (stocksEnabledToggle) {
-            localStorage.setItem('stocks_enabled', stocksEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('stocks_enabled', stocksEnabledToggle.checked ? 'true' : 'false');
         }
         if (converterEnabledToggle) {
-            localStorage.setItem('converter_enabled', converterEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('converter_enabled', converterEnabledToggle.checked ? 'true' : 'false');
         }
 
         // Save Central Column tab selections
@@ -1090,8 +1100,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (enabledCentralTabs.length === 0) {
             let hasIframeTabs = false;
             try {
-                hasIframeTabs = Array.isArray(JSON.parse(localStorage.getItem('central_tabs_iframes')))
-                    && JSON.parse(localStorage.getItem('central_tabs_iframes')).length > 0;
+                hasIframeTabs = Array.isArray(JSON.parse(AppStorage.getItem('central_tabs_iframes')))
+                    && JSON.parse(AppStorage.getItem('central_tabs_iframes')).length > 0;
             } catch (e) {
                 hasIframeTabs = false;
             }
@@ -1110,7 +1120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        localStorage.setItem('central_tabs_enabled', JSON.stringify(enabledCentralTabs));
+        AppStorage.setItem('central_tabs_enabled', JSON.stringify(enabledCentralTabs));
 
         // Se l'utente attiva almeno uno dei widget della colonna sinistra, salva widgets_activated_once
         const weatherActive = weatherEnabledToggle ? weatherEnabledToggle.checked : false;
@@ -1122,23 +1132,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const converterActive = converterEnabledToggle ? converterEnabledToggle.checked : false;
 
         if (weatherActive || chatActive || pomodoroActive || countdownActive || sysmonitorActive || stocksActive || converterActive) {
-            localStorage.setItem('widgets_activated_once', 'true');
+            AppStorage.setItem('widgets_activated_once', 'true');
         }
 
         if (chatProviderSelect) {
-            localStorage.setItem('chat_provider', chatProviderSelect.value);
+            AppStorage.setItem('chat_provider', chatProviderSelect.value);
         }
         if (chatModelInput) {
-            localStorage.setItem('chat_model', chatModelInput.value.trim() || 'gpt-4o-mini');
+            AppStorage.setItem('chat_model', chatModelInput.value.trim() || 'gpt-4o-mini');
         }
 
         if (chatEndpointInput) {
-            localStorage.setItem('chat_endpoint', chatEndpointInput.value.trim() || 'https://api.openai.com/v1');
+            const savedChatEndpoint = chatEndpointInput.value.trim() || 'https://api.openai.com/v1';
+            AppStorage.setItem('chat_endpoint', savedChatEndpoint);
+            requestChatEndpointPermission(savedChatEndpoint);
         }
 
         const profileNameInputSave = document.getElementById('settings-profile-name');
         if (profileNameInputSave) {
-            localStorage.setItem('profile_name', profileNameInputSave.value.trim().slice(0, 30));
+            AppStorage.setItem('profile_name', profileNameInputSave.value.trim().slice(0, 30));
         }
 
         // Save API Keys
@@ -1150,16 +1162,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!lat) lat = DEFAULT_LAT;
         if (!lon) lon = DEFAULT_LON;
 
-        localStorage.setItem('chat_api_key', chatKey);
-        localStorage.setItem('gemini_api_key', chatKey);
-        localStorage.setItem('weather_api_key', weatherKey);
-        localStorage.setItem('weather_lat', lat);
-        localStorage.setItem('weather_lon', lon);
+        AppStorage.setItem('chat_api_key', chatKey);
+        AppStorage.setItem('gemini_api_key', chatKey);
+        AppStorage.setItem('weather_api_key', weatherKey);
+        AppStorage.setItem('weather_lat', lat);
+        AppStorage.setItem('weather_lon', lon);
 
         // Save Spotify Client ID
         const spotifyClientIdInput = document.getElementById('settings-spotify-client-id');
         if (spotifyClientIdInput) {
-            localStorage.setItem('spotify_client_id', spotifyClientIdInput.value.trim());
+            AppStorage.setItem('spotify_client_id', spotifyClientIdInput.value.trim());
         }
 
         // Save Google Client ID (with format validation to catch redirect_uri_mismatch early)
@@ -1169,20 +1181,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (gid && !/^.*\.apps\.googleusercontent\.com$/.test(gid)) {
                 alert('Attenzione: il Google Client ID non sembra valido (deve terminare con .apps.googleusercontent.com). Salvato comunque, ma il login fallirà con redirect_uri_mismatch se sbagliato.');
             }
-            localStorage.setItem('google_client_id', gid);
+            AppStorage.setItem('google_client_id', gid);
         }
 
         const googleClientSecretInput = document.getElementById('settings-google-client-secret');
         if (googleClientSecretInput) {
-            localStorage.setItem('google_client_secret', googleClientSecretInput.value.trim());
+            AppStorage.setItem('google_client_secret', googleClientSecretInput.value.trim());
         }
 
         // Save Searchbar settings
         if (defaultSearchEngineSelect) {
-            localStorage.setItem('defaultSearchEngine', defaultSearchEngineSelect.value);
+            AppStorage.setItem('defaultSearchEngine', defaultSearchEngineSelect.value);
         }
         if (aiSearchEnabledToggle) {
-            localStorage.setItem('aiSearchEnabled', aiSearchEnabledToggle.checked ? 'true' : 'false');
+            AppStorage.setItem('aiSearchEnabled', aiSearchEnabledToggle.checked ? 'true' : 'false');
         }
 
 
@@ -1195,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof window.CentralTabs?.refresh === 'function') {
             window.CentralTabs.refresh();
         }
-        window.location.reload();
+        AppStorage.flush().finally(() => window.location.reload());
     });
 
     // Handle Disconnect Spotify Click
@@ -1234,7 +1246,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let iframes = [];
         try {
-            iframes = JSON.parse(localStorage.getItem('central_tabs_iframes')) || [];
+            iframes = JSON.parse(AppStorage.getItem('central_tabs_iframes')) || [];
         } catch (e) {
             iframes = [];
         }
@@ -1261,7 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             item.querySelector('.delete').addEventListener('click', () => {
                 iframes.splice(index, 1);
-                localStorage.setItem('central_tabs_iframes', JSON.stringify(iframes));
+                AppStorage.setItem('central_tabs_iframes', JSON.stringify(iframes));
                 renderIframeSitesList();
                 if (typeof window.CentralTabs?.refresh === 'function') {
                     window.CentralTabs.refresh();
@@ -1272,22 +1284,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Legge i feed configurati o, se non esiste ancora la chiave, i default condivisi.
+    // Restituisce sempre una copia per non mutare la lista globale.
+    function getStoredRssFeeds() {
+        try {
+            const parsed = JSON.parse(AppStorage.getItem('rss_feeds'));
+            if (Array.isArray(parsed)) return parsed;
+        } catch (e) { /* fallback ai default */ }
+        return (window.DEFAULT_RSS_FEEDS || []).map(feed => ({ ...feed }));
+    }
+
     // Render and manage RSS feeds in settings
     function renderRssFeedsList() {
         const listContainer = document.getElementById('rss-feeds-list');
         if (!listContainer) return;
         listContainer.innerHTML = '';
-        
-        let feeds = [];
-        try {
-            feeds = JSON.parse(localStorage.getItem('rss_feeds')) || [
-                { name: "ANSA", url: "https://www.ansa.it/sito/ansait_rss.xml" },
-                { name: "Wired Italia", url: "https://www.wired.it/feed/" },
-                { name: "Corriere della Sera", url: "https://xml2.corriereobjects.it/rss/homepage.xml" }
-            ];
-        } catch (e) {
-            feeds = [];
-        }
+
+        const feeds = getStoredRssFeeds();
 
         if (feeds.length === 0) {
             listContainer.innerHTML = '<div style="padding: 10px; color: #888; font-size: 12px; text-align: center;">Nessun feed RSS configurato.</div>';
@@ -1311,7 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             item.querySelector('.delete').addEventListener('click', () => {
                 feeds.splice(index, 1);
-                localStorage.setItem('rss_feeds', JSON.stringify(feeds));
+                AppStorage.setItem('rss_feeds', JSON.stringify(feeds));
                 renderRssFeedsList();
                 if (typeof window.CentralTabs?.refresh === 'function') {
                     window.CentralTabs.refresh();
@@ -1342,7 +1355,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let iframes = [];
             try {
-                iframes = JSON.parse(localStorage.getItem('central_tabs_iframes')) || [];
+                iframes = JSON.parse(AppStorage.getItem('central_tabs_iframes')) || [];
             } catch (e) {
                 iframes = [];
             }
@@ -1353,7 +1366,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 url: url
             });
 
-            localStorage.setItem('central_tabs_iframes', JSON.stringify(iframes));
+            AppStorage.setItem('central_tabs_iframes', JSON.stringify(iframes));
             nameInput.value = '';
             urlInput.value = '';
             renderIframeSitesList();
@@ -1381,19 +1394,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 url = 'https://' + url;
             }
 
-            let feeds = [];
-            try {
-                feeds = JSON.parse(localStorage.getItem('rss_feeds')) || [];
-            } catch (e) {
-                feeds = [];
-            }
+            const feeds = getStoredRssFeeds();
 
             feeds.push({
                 name: name,
                 url: url
             });
 
-            localStorage.setItem('rss_feeds', JSON.stringify(feeds));
+            AppStorage.setItem('rss_feeds', JSON.stringify(feeds));
             nameInput.value = '';
             urlInput.value = '';
             renderRssFeedsList();
@@ -1426,10 +1434,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Annulla = escludi chiavi e token (consigliato per condivisioni/backup sicuri).'
                 );
                 const backup = { _meta: { app: 'custom-new-tab', version: 1, exportedAt: new Date().toISOString(), secretsIncluded: includeSecrets } };
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
+                for (let i = 0; i < AppStorage.length; i++) {
+                    const key = AppStorage.key(i);
                     if (!includeSecrets && SENSITIVE_KEYS.has(key)) continue;
-                    const rawVal = localStorage.getItem(key);
+                    const rawVal = AppStorage.getItem(key);
                     if (rawVal === null || rawVal === undefined) continue;
 
                     const trimmed = rawVal.trim();
@@ -1500,20 +1508,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         data.rss_feeds = data.rss_feeds.filter(f => f && typeof f.url === 'string' && /^https?:\/\//i.test(f.url.trim()));
                     }
 
-                    localStorage.clear();
+                    AppStorage.clear();
                     keys.forEach(key => {
                         const val = data[key];
                         if (val === null || val === undefined) return;
 
                         if (typeof val === 'object') {
-                            localStorage.setItem(key, JSON.stringify(val));
+                            AppStorage.setItem(key, JSON.stringify(val));
                         } else {
-                            localStorage.setItem(key, String(val));
+                            AppStorage.setItem(key, String(val));
                         }
                     });
 
-                    alert("Impostazioni importate con successo! Ricaricamento in corso...");
-                    window.location.reload();
+                    AppStorage.flush().finally(() => {
+                        alert("Impostazioni importate con successo! Ricaricamento in corso...");
+                        window.location.reload();
+                    });
                 }
             } catch (error) {
                 console.error("Errore durante l'importazione delle impostazioni:", error);
@@ -1534,7 +1544,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (file) {
                 if (importFilenameDisplay) importFilenameDisplay.textContent = file.name;
                 if (importBtn) importBtn.style.display = 'block';
-                processImportFile(file);
             } else {
                 if (importFilenameDisplay) importFilenameDisplay.textContent = 'Nessun file selezionato';
                 if (importBtn) importBtn.style.display = 'none';

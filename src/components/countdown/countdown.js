@@ -1,4 +1,7 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
+    // Widget disabilitato: evita il ticker da 1 s e il rendering inutile.
+    if (AppStorage.getItem('countdown_enabled') !== 'true') return;
+
     // DOM Elements
     const addBtn = document.getElementById('countdown-add-btn');
     const formPanel = document.getElementById('countdown-form');
@@ -8,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveFormBtn = document.getElementById('countdown-save-form');
     const listContainer = document.getElementById('countdown-list');
 
-    let countdowns = JSON.parse(localStorage.getItem('countdowns')) || [];
+    let countdowns = JSON.parse(AppStorage.getItem('countdowns')) || [];
 
     // Setup input min date to today
     if (dateInput) {
@@ -64,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             countdowns.push(newCountdown);
-            localStorage.setItem('countdowns', JSON.stringify(countdowns));
+            AppStorage.setItem('countdowns', JSON.stringify(countdowns));
 
             formPanel.style.display = 'none';
             renderCountdowns();
@@ -74,14 +77,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Calculate time differences and render items
     function renderCountdowns() {
         if (!listContainer) return;
-        listContainer.innerHTML = '';
+        listContainer.textContent = '';
 
         if (countdowns.length === 0) {
-            listContainer.innerHTML = `
-                <div style="font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; padding: 12px;">
-                    Nessun countdown attivo. Clicca su + per aggiungerne uno.
-                </div>
-            `;
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.cssText = "font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; padding: 12px;";
+            emptyDiv.textContent = "Nessun countdown attivo. Clicca su + per aggiungerne uno.";
+            listContainer.appendChild(emptyDiv);
             return;
         }
 
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 deleteBtn0.addEventListener('click', () => {
                     if (confirm(`Sei sicuro di voler eliminare il countdown "${cd.title}"?`)) {
                         countdowns = countdowns.filter(item => item.id !== cd.id);
-                        localStorage.setItem('countdowns', JSON.stringify(countdowns));
+                        AppStorage.setItem('countdowns', JSON.stringify(countdowns));
                         renderCountdowns();
                     }
                 });
@@ -173,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             delBtn.addEventListener('click', () => {
                 if (confirm(`Sei sicuro di voler eliminare il countdown "${cd.title}"?`)) {
                     countdowns = countdowns.filter(item => item.id !== cd.id);
-                    localStorage.setItem('countdowns', JSON.stringify(countdowns));
+                    AppStorage.setItem('countdowns', JSON.stringify(countdowns));
                     renderCountdowns();
                 }
             });

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     // Configurazione motori di ricerca standard e URLs
     const SEARCH_ENGINES = {
         google: {
@@ -56,13 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Lettura delle preferenze salvate
-    let defaultEngineKey = localStorage.getItem('defaultSearchEngine') || 'google';
+    let defaultEngineKey = AppStorage.getItem('defaultSearchEngine') || 'google';
     if (!SEARCH_ENGINES[defaultEngineKey]) defaultEngineKey = 'google';
 
-    let aiSearchEnabled = localStorage.getItem('aiSearchEnabled') !== 'false';
+    let aiSearchEnabled = AppStorage.getItem('aiSearchEnabled') !== 'false';
 
     // Motore di ricerca attivo
-    let activeEngine = localStorage.getItem('activeEngine') || defaultEngineKey;
+    let activeEngine = AppStorage.getItem('activeEngine') || defaultEngineKey;
     // Se activeEngine non è perplexity e il motore standard è cambiato o non esiste, sincronizza
     if (activeEngine !== 'perplexity') {
         activeEngine = defaultEngineKey;
@@ -110,10 +110,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inizializza lo stato all'avvio
     function initSearchEngine() {
-        defaultEngineKey = localStorage.getItem('defaultSearchEngine') || 'google';
+        defaultEngineKey = AppStorage.getItem('defaultSearchEngine') || 'google';
         if (!SEARCH_ENGINES[defaultEngineKey]) defaultEngineKey = 'google';
 
-        aiSearchEnabled = localStorage.getItem('aiSearchEnabled') !== 'false';
+        aiSearchEnabled = AppStorage.getItem('aiSearchEnabled') !== 'false';
 
         updateAiButtonVisibility();
 
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
         engineToggle.addEventListener('change', (event) => {
             if (!aiSearchEnabled) return;
             activeEngine = event.target.checked ? 'perplexity' : defaultEngineKey;
-            localStorage.setItem('activeEngine', activeEngine);
+            AppStorage.setItem('activeEngine', activeEngine);
             updateSearchLogo();
         });
     }

@@ -1,4 +1,7 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
+    // Widget disabilitato: evita fetch periodici e inizializzazione inutile.
+    if (AppStorage.getItem('stocks_enabled') !== 'true') return;
+
     // DOM Elements
     const addBtn = document.getElementById('stocks-add-btn');
     const formPanel = document.getElementById('stocks-form');
@@ -8,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const listContainer = document.getElementById('stocks-list');
 
     // Default assets: BTC, ETH, AAPL, TSLA
-    let assets = JSON.parse(localStorage.getItem('stocks_assets')) || [
+    let assets = JSON.parse(AppStorage.getItem('stocks_assets')) || [
         { symbol: 'BTC', name: 'Bitcoin', type: 'crypto', apiId: 'bitcoin' },
         { symbol: 'ETH', name: 'Ethereum', type: 'crypto', apiId: 'ethereum' },
         { symbol: 'AAPL', name: 'Apple Inc.', type: 'stock', yahooSymbol: 'AAPL' },
@@ -64,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 
                 assets.push(newAsset);
-                localStorage.setItem('stocks_assets', JSON.stringify(assets));
+                AppStorage.setItem('stocks_assets', JSON.stringify(assets));
                 formPanel.style.display = 'none';
                 fetchAndRenderPrices();
             } else {
@@ -92,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 yahooSymbol: rawSymbol
                             };
                             assets.push(newAsset);
-                            localStorage.setItem('stocks_assets', JSON.stringify(assets));
+                            AppStorage.setItem('stocks_assets', JSON.stringify(assets));
                             formPanel.style.display = 'none';
                             fetchAndRenderPrices();
                         } else {
@@ -152,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let prices = {};
         let cache = null;
         try {
-            cache = JSON.parse(localStorage.getItem('stocks_cache') || 'null');
+            cache = JSON.parse(AppStorage.getItem('stocks_cache') || 'null');
         } catch (e) { cache = null; }
         const cacheValid = cache && (Date.now() - cache.ts < 5 * 60 * 1000) && cache.prices;
 
@@ -239,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (rest.price) toCache[k] = rest;
             });
             if (Object.keys(toCache).length > 0) {
-                localStorage.setItem('stocks_cache', JSON.stringify({ ts: Date.now(), prices: toCache }));
+                AppStorage.setItem('stocks_cache', JSON.stringify({ ts: Date.now(), prices: toCache }));
             }
         } catch (e) { /* quota ignore */ }
 
@@ -325,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.addEventListener('click', () => {
                 if (confirm(`Rimuovere ${asset.symbol} dalla lista?`)) {
                     assets = assets.filter(a => a.symbol !== asset.symbol);
-                    localStorage.setItem('stocks_assets', JSON.stringify(assets));
+                    AppStorage.setItem('stocks_assets', JSON.stringify(assets));
                     fetchAndRenderPrices();
                 }
             });

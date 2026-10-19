@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     // Funzione per aggiornare l'orologio
     function updateClock() {
         const now = new Date();

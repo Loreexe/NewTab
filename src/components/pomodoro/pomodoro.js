@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     // DOM Elements
     const gearBtn = document.getElementById('pomodoro-gear-btn');
     const configPanel = document.getElementById('pomodoro-config');
@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const resetBtn = document.getElementById('pomodoro-reset');
     
     // Configurations & Initial state
-    let workTime = parseInt(localStorage.getItem('pomodoro_work_time')) || 25;
-    let shortBreakTime = parseInt(localStorage.getItem('pomodoro_short_time')) || 5;
-    let longBreakTime = parseInt(localStorage.getItem('pomodoro_long_time')) || 15;
+    let workTime = parseInt(AppStorage.getItem('pomodoro_work_time')) || 25;
+    let shortBreakTime = parseInt(AppStorage.getItem('pomodoro_short_time')) || 5;
+    let longBreakTime = parseInt(AppStorage.getItem('pomodoro_long_time')) || 15;
     
     // Set inputs value
     if (workInput) workInput.value = workTime;
@@ -122,9 +122,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const newShort = Math.max(1, parseInt(shortInput.value) || 5);
             const newLong = Math.max(1, parseInt(longInput.value) || 15);
             
-            localStorage.setItem('pomodoro_work_time', newWork);
-            localStorage.setItem('pomodoro_short_time', newShort);
-            localStorage.setItem('pomodoro_long_time', newLong);
+            AppStorage.setItem('pomodoro_work_time', newWork);
+            AppStorage.setItem('pomodoro_short_time', newShort);
+            AppStorage.setItem('pomodoro_long_time', newLong);
             
             workTime = newWork;
             shortBreakTime = newShort;

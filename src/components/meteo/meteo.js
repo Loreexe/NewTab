@@ -1,23 +1,23 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     const customIcons = {
-      '01d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/clear-day.svg',
-      '01n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/clear-night.svg',
-      '02d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/partly-cloudy-day.svg',
-      '02n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/partly-cloudy-night.svg',
-      '03d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/cloudy.svg',
-      '03n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/cloudy.svg',
-      '04d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/overcast-day.svg',
-      '04n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/overcast-night.svg',
-      '09d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/partly-cloudy-day-rain.svg',
-      '09n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/partly-cloudy-night-rain.svg',
-      '10d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/rain.svg',
-      '10n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/rain.svg',
-      '11d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/thunderstorms.svg',
-      '11n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/thunderstorms.svg',
-      '13d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/snow.svg',
-      '13n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/snow.svg',
-      '50d': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/mist.svg',
-      '50n': 'https://cdn.jsdelivr.net/gh/basmilius/weather-icons/production/fill/all/mist.svg'
+      '01d': 'images/weather/clear-day.svg',
+      '01n': 'images/weather/clear-night.svg',
+      '02d': 'images/weather/partly-cloudy-day.svg',
+      '02n': 'images/weather/partly-cloudy-night.svg',
+      '03d': 'images/weather/cloudy.svg',
+      '03n': 'images/weather/cloudy.svg',
+      '04d': 'images/weather/overcast-day.svg',
+      '04n': 'images/weather/overcast-night.svg',
+      '09d': 'images/weather/partly-cloudy-day-rain.svg',
+      '09n': 'images/weather/partly-cloudy-night-rain.svg',
+      '10d': 'images/weather/rain.svg',
+      '10n': 'images/weather/rain.svg',
+      '11d': 'images/weather/thunderstorms.svg',
+      '11n': 'images/weather/thunderstorms.svg',
+      '13d': 'images/weather/snow.svg',
+      '13n': 'images/weather/snow.svg',
+      '50d': 'images/weather/mist.svg',
+      '50n': 'images/weather/mist.svg'
     };
 
     function esc(s) {
@@ -144,12 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function getWeather() {
-      if (localStorage.getItem('weather_enabled') !== 'true') {
+      if (AppStorage.getItem('weather_enabled') !== 'true') {
         return;
       }
-      const apiKey = localStorage.getItem('weather_api_key');
-      const lat = localStorage.getItem('weather_lat') || 38.100470;
-      const lon = localStorage.getItem('weather_lon') || 13.353646;
+      const apiKey = AppStorage.getItem('weather_api_key');
+      const lat = AppStorage.getItem('weather_lat') || 38.100470;
+      const lon = AppStorage.getItem('weather_lon') || 13.353646;
 
       const hourlyContainer = document.getElementById('hourly');
       const dailyContainer = document.getElementById('daily');
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const cached = localStorage.getItem('weather_full_cache');
+        const cached = AppStorage.getItem('weather_full_cache');
         if (cached) {
           const c = JSON.parse(cached);
           if (c && c.data && (Date.now() - c.ts < 30 * 60 * 1000) && String(c.lat) === String(lat) && String(c.lon) === String(lon)) {
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         console.error("Errore meteo:", err);
         try {
-          const cached = localStorage.getItem('weather_full_cache');
+          const cached = AppStorage.getItem('weather_full_cache');
           if (cached) {
             const c = JSON.parse(cached);
             if (c && c.data && (Date.now() - c.ts < 24 * 60 * 60 * 1000)) {
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        localStorage.setItem('weather_full_cache', JSON.stringify({ ts: Date.now(), lat, lon, data }));
+        AppStorage.setItem('weather_full_cache', JSON.stringify({ ts: Date.now(), lat, lon, data }));
       } catch (e) {}
 
       renderWeatherData(data, false);

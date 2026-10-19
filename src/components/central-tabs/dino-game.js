@@ -610,7 +610,7 @@ window.DinoGame = (function () {
         if (score > highScore) {
             highScore = score;
             try {
-                localStorage.setItem('dino_high_score', highScore);
+                AppStorage.setItem('dino_high_score', highScore);
             } catch (e) {}
         }
         updateScoreUI();
@@ -619,18 +619,36 @@ window.DinoGame = (function () {
         const overlay = document.getElementById('dino-overlay');
         const startMsg = document.getElementById('dino-start-msg');
         if (overlay && startMsg) {
-            startMsg.innerHTML = `
-                <div class="dino-big-icon">💥</div>
-                <h3>GAME OVER</h3>
-                <p>Punteggio Finale: <strong>${score}</strong> | Record: <strong>${highScore}</strong></p>
-                <button class="dino-btn" id="dino-restart-btn">Gioca Ancora</button>
-            `;
-            overlay.style.display = 'flex';
+            startMsg.textContent = '';
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'dino-big-icon';
+            iconDiv.textContent = '💥';
 
-            const restartBtn = document.getElementById('dino-restart-btn');
-            if (restartBtn) {
-                restartBtn.addEventListener('click', startNewGame);
-            }
+            const h3 = document.createElement('h3');
+            h3.textContent = 'GAME OVER';
+
+            const p = document.createElement('p');
+            p.appendChild(document.createTextNode('Punteggio Finale: '));
+            const sScore = document.createElement('strong');
+            sScore.textContent = String(score);
+            p.appendChild(sScore);
+            p.appendChild(document.createTextNode(' | Record: '));
+            const sHighScore = document.createElement('strong');
+            sHighScore.textContent = String(highScore);
+            p.appendChild(sHighScore);
+
+            const restartBtn = document.createElement('button');
+            restartBtn.className = 'dino-btn';
+            restartBtn.id = 'dino-restart-btn';
+            restartBtn.textContent = 'Gioca Ancora';
+            restartBtn.addEventListener('click', startNewGame);
+
+            startMsg.appendChild(iconDiv);
+            startMsg.appendChild(h3);
+            startMsg.appendChild(p);
+            startMsg.appendChild(restartBtn);
+
+            overlay.style.display = 'flex';
         }
     }
 
@@ -721,7 +739,7 @@ window.DinoGame = (function () {
 
         // Load High Score from localStorage
         try {
-            const savedScore = localStorage.getItem('dino_high_score');
+            const savedScore = AppStorage.getItem('dino_high_score');
             if (savedScore) highScore = parseInt(savedScore, 10) || 0;
         } catch (e) {}
 

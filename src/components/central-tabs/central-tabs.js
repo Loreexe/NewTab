@@ -1,14 +1,10 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     // Nota sicurezza: NON rimuoviamo X-Frame-Options / CSP via declarativeNetRequest.
     // Molti siti (Google, YouTube, GitHub) bloccano l'iframe per policy: è mostrato
     // un messaggio dedicato invece di aggirare le protezioni (pratica rifiutata dal Web Store).
 
     // 1. CONFIGURATION & STATE
-    const DEFAULT_RSS_FEEDS = [
-        { name: "ANSA", url: "https://www.ansa.it/sito/ansait_rss.xml" },
-        { name: "Wired Italia", url: "https://www.wired.it/feed/" },
-        { name: "Corriere della Sera", url: "https://xml2.corriereobjects.it/rss/homepage.xml" }
-    ];
+    const DEFAULT_RSS_FEEDS = window.DEFAULT_RSS_FEEDS || [];
 
     // DOM Elements
     const tabsBarWrapper = document.getElementById('central-tabs-bar-wrapper');
@@ -35,10 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastFetchedRssUrl = null;
 
     function readStoredArray(key, fallback) {
-        const raw = localStorage.getItem(key);
+        const raw = AppStorage.getItem(key);
         if (raw === null) {
             const seeded = JSON.stringify(fallback);
-            localStorage.setItem(key, seeded);
+            AppStorage.setItem(key, seeded);
             return fallback;
         }
         try {
@@ -169,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (idx === -1) return;
 
         activeTabId = tabId;
-        localStorage.setItem('active_central_tab', tabId);
+        AppStorage.setItem('active_central_tab', tabId);
 
         // Update active class on tab buttons
         const buttons = tabsListEl.querySelectorAll('.central-tab');
@@ -235,10 +231,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Ricostruisce bar, pannelli e selezione a partire da localStorage.
+    // Ricostruisce bar, pannelli e selezione a partire da AppStorage.
     // Usata sia all'avvio sia dopo modifiche alle Impostazioni (senza reload pagina).
     function refresh(animate = false) {
         readConfig();
+
+        // Ripristina l'ultima tab solo al primo refresh, quando AppStorage è pronto.
+        if (activeTabId === null) {
+            activeTabId = AppStorage.getItem('active_central_tab') || null;
+        }
 
         tabsListEl.innerHTML = '';
 
@@ -326,13 +327,19 @@ document.addEventListener('DOMContentLoaded', () => {
     window.CentralTabs = { refresh: () => refresh(true) };
 
     // 4. RSS FEED READER IMPLEMENTATION
-    // Carica custom + default RSS feeds
+    // Carica custom + default RSS feeds. Va riletta a ogni refresh perché le
+    // Impostazioni possono modificare la lista senza ricaricare la pagina.
     let rssFeeds = [];
-    try {
-        rssFeeds = readStoredArray('rss_feeds', DEFAULT_RSS_FEEDS);
-    } catch (e) {
-        rssFeeds = DEFAULT_RSS_FEEDS;
+
+    function loadRssFeeds() {
+        try {
+            rssFeeds = readStoredArray('rss_feeds', DEFAULT_RSS_FEEDS);
+        } catch (e) {
+            rssFeeds = DEFAULT_RSS_FEEDS;
+        }
     }
+
+    loadRssFeeds();
 
     // Render feeds in selector
     function renderRssFeedOptions() {
@@ -356,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Restore last selected feed url
-        const savedUrl = localStorage.getItem('selected_rss_feed_url');
+        const savedUrl = AppStorage.getItem('selected_rss_feed_url');
         if (savedUrl && rssFeeds.some(f => f.url === savedUrl)) {
             rssSelect.value = savedUrl;
         } else if (previousValue && rssFeeds.some(f => f.url === previousValue)) {
@@ -400,6 +407,74 @@ document.addEventListener('DOMContentLoaded', () => {
             hash |= 0;
         }
         return 'rss_cache_' + Math.abs(hash).toString(36);
+    }
+
+    // Costruisce le card RSS. Il chiamante deve aver già svuotato il contenitore.
+    function renderRssItems(items) {
+        (items || []).forEach(item => {
+            const card = document.createElement('a');
+            card.className = 'rss-item';
+            const safeLink = (item.link && /^https?:\/\//i.test(item.link)) ? item.link : '#';
+            card.href = safeLink;
+            card.target = '_blank';
+            card.rel = 'noopener noreferrer';
+
+            const titleText = item.title;
+            const dateText = formatRelativeTime(item.pubDate);
+
+            const header = document.createElement('div');
+            header.className = 'rss-item-header';
+
+            const title = document.createElement('div');
+            title.className = 'rss-item-title';
+            title.textContent = titleText;
+
+            const date = document.createElement('span');
+            date.className = 'rss-item-date';
+            date.textContent = dateText;
+
+            header.appendChild(title);
+            header.appendChild(date);
+            card.appendChild(header);
+
+            const body = document.createElement('div');
+            body.className = 'rss-item-body';
+
+            let thumbnailSrc = (item.thumbnail && /^https?:\/\//i.test(item.thumbnail)) ? item.thumbnail : null;
+            let descText = "";
+
+            if (item.description) {
+                try {
+                    const descDoc = new DOMParser().parseFromString(item.description, 'text/html');
+                    if (!thumbnailSrc) {
+                        const firstImg = descDoc.querySelector('img');
+                        if (firstImg && firstImg.src && /^https?:\/\//i.test(firstImg.src)) {
+                            thumbnailSrc = firstImg.src;
+                        }
+                    }
+                    descText = (descDoc.body.textContent || "").trim();
+                } catch (e) {
+                    descText = "";
+                }
+            }
+
+            if (thumbnailSrc) {
+                const img = document.createElement('img');
+                img.className = 'rss-item-thumb';
+                img.src = thumbnailSrc;
+                img.alt = "";
+                img.loading = "lazy";
+                body.appendChild(img);
+            }
+
+            const desc = document.createElement('div');
+            desc.className = 'rss-item-desc';
+            desc.textContent = descText;
+            body.appendChild(desc);
+
+            card.appendChild(body);
+            rssNewsList.appendChild(card);
+        });
     }
 
     let rssAbortController = null;
@@ -463,81 +538,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Cache ultimo feed riuscito per fallback offline
             try {
-                localStorage.setItem(getRssCacheKey(feedUrl), JSON.stringify({ ts: Date.now(), items: (data.items || []).slice(0, 20) }));
+                AppStorage.setItem(getRssCacheKey(feedUrl), JSON.stringify({ ts: Date.now(), items: (data.items || []).slice(0, 20) }));
             } catch (e) { /* quota ignore */ }
 
             rssNewsList.textContent = '';
             const items = data.items || [];
 
             if (items.length === 0) {
-                rssNewsList.innerHTML = `<div class="rss-empty">Nessuna notizia trovata in questo feed.</div>`;
+                const empty = document.createElement('div');
+                empty.className = 'rss-empty';
+                empty.textContent = 'Nessuna notizia trovata in questo feed.';
+                rssNewsList.appendChild(empty);
                 return;
             }
 
-            items.forEach(item => {
-                const card = document.createElement('a');
-                card.className = 'rss-item';
-                const safeLink = (item.link && /^https?:\/\//i.test(item.link)) ? item.link : '#';
-                card.href = safeLink;
-                card.target = '_blank';
-                card.rel = 'noopener noreferrer';
-
-                const titleText = item.title;
-                const dateText = formatRelativeTime(item.pubDate);
-
-                const header = document.createElement('div');
-                header.className = 'rss-item-header';
-
-                const title = document.createElement('div');
-                title.className = 'rss-item-title';
-                title.textContent = titleText;
-
-                const date = document.createElement('span');
-                date.className = 'rss-item-date';
-                date.textContent = dateText;
-
-                header.appendChild(title);
-                header.appendChild(date);
-                card.appendChild(header);
-
-                const body = document.createElement('div');
-                body.className = 'rss-item-body';
-
-                let thumbnailSrc = (item.thumbnail && /^https?:\/\//i.test(item.thumbnail)) ? item.thumbnail : null;
-                let descText = "";
-
-                if (item.description) {
-                    try {
-                        const descDoc = new DOMParser().parseFromString(item.description, 'text/html');
-                        if (!thumbnailSrc) {
-                            const firstImg = descDoc.querySelector('img');
-                            if (firstImg && firstImg.src && /^https?:\/\//i.test(firstImg.src)) {
-                                thumbnailSrc = firstImg.src;
-                            }
-                        }
-                        descText = (descDoc.body.textContent || "").trim();
-                    } catch (e) {
-                        descText = "";
-                    }
-                }
-
-                if (thumbnailSrc) {
-                    const img = document.createElement('img');
-                    img.className = 'rss-item-thumb';
-                    img.src = thumbnailSrc;
-                    img.alt = "";
-                    img.loading = "lazy";
-                    body.appendChild(img);
-                }
-
-                const desc = document.createElement('div');
-                desc.className = 'rss-item-desc';
-                desc.textContent = descText;
-                body.appendChild(desc);
-
-                card.appendChild(body);
-                rssNewsList.appendChild(card);
-            });
+            renderRssItems(items);
 
         } catch (error) {
             // Se è stata avviata una richiesta più recente, non toccare la UI
@@ -545,18 +560,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.error("RSS fetch error:", error);
             rssNewsList.textContent = "";
-            // Prova cache come fallback
-            let cachedNote = "";
+
+            // Fallback: se esiste una cache recente, mostra gli ultimi item salvati.
+            let cached = null;
             try {
-                const cached = JSON.parse(localStorage.getItem(getRssCacheKey(feedUrl)) || 'null');
-                if (cached && cached.items && cached.items.length > 0 && (Date.now() - cached.ts < 24 * 3600 * 1000)) {
-                    cachedNote = " (mostro ultimi dati salvati)";
-                }
-            } catch (e) { /* ignore */ }
+                cached = JSON.parse(AppStorage.getItem(getRssCacheKey(feedUrl)) || 'null');
+            } catch (e) { /* cache non leggibile */ }
+
+            const cachedItems = (cached && Array.isArray(cached.items)) ? cached.items : [];
+            if (cachedItems.length > 0 && (Date.now() - cached.ts < 24 * 3600 * 1000)) {
+                const note = document.createElement('div');
+                note.className = 'rss-cache-note';
+
+                const line1 = document.createElement('span');
+                line1.textContent = '⚠️ Impossibile aggiornare il feed. Mostro gli ultimi dati salvati del '
+                    + new Date(cached.ts).toLocaleString('it-IT', {
+                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                    }) + '.';
+
+                const line2 = document.createElement('span');
+                line2.className = 'rss-cache-note-error';
+                line2.textContent = error.name === 'AbortError' ? 'Timeout, riprova.' : String(error.message || error);
+
+                const retryBtn = document.createElement('button');
+                retryBtn.className = 'save-btn';
+                retryBtn.style.cssText = 'width:auto;font-size:11px;padding:6px 14px;';
+                retryBtn.textContent = 'Riprova';
+                retryBtn.addEventListener('click', () => fetchRssFeed(feedUrl));
+
+                note.appendChild(line1);
+                note.appendChild(line2);
+                note.appendChild(retryBtn);
+                rssNewsList.appendChild(note);
+                renderRssItems(cachedItems);
+                return;
+            }
+
             const errBox = document.createElement('div');
             errBox.className = 'rss-error';
             const e1 = document.createElement('span');
-            e1.textContent = '❌ Impossibile caricare il feed RSS' + cachedNote + '.';
+            e1.textContent = '❌ Impossibile caricare il feed RSS.';
             const e2 = document.createElement('span');
             e2.style.cssText = 'font-size:11px;color:rgba(255,255,255,0.4);';
             e2.textContent = error.name === 'AbortError' ? 'Timeout, riprova.' : String(error.message || error);
@@ -576,6 +619,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function ensureRssReady() {
         if (!rssSelect || !rssNewsList) return;
 
+        // Rilegge la lista a ogni refresh: le Impostazioni possono averla cambiata.
+        loadRssFeeds();
+
         if (!rssInitialized) {
             rssInitialized = true;
 
@@ -584,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle feed dropdown change
             rssSelect.addEventListener('change', () => {
                 const url = rssSelect.value;
-                localStorage.setItem('selected_rss_feed_url', url);
+                AppStorage.setItem('selected_rss_feed_url', url);
                 fetchRssFeed(url);
             });
 
@@ -600,7 +646,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Non rifetchare se il feed mostrato è già quello selezionato.
-        if (rssSelect.value && rssSelect.value !== lastFetchedRssUrl) {
+        if (!rssSelect.value) {
+            // Nessun feed configurato: svuota gli item rimasti da un feed rimosso.
+            if (lastFetchedRssUrl !== null || rssNewsList.childElementCount === 0) {
+                lastFetchedRssUrl = null;
+                fetchRssFeed('');
+            }
+        } else if (rssSelect.value !== lastFetchedRssUrl) {
             fetchRssFeed(rssSelect.value);
         }
     }

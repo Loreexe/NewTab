@@ -246,6 +246,26 @@ body.central-column-collapsed #resizer-todo {
     box-sizing: border-box;
 }
 
+.rss-cache-note {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.55);
+    text-align: center;
+    background: rgba(255, 193, 7, 0.08);
+    border: 1px solid rgba(255, 193, 7, 0.2);
+    border-radius: 6px;
+}
+
+.rss-cache-note-error {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.35);
+}
+
 .rss-spinner {
     width: 24px;
     height: 24px;

@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     const leftSidebar = document.getElementById('col-sinistra');
     const rightSidebar = document.getElementById('sidebar-right-container');
     const resizerLeft = document.getElementById('resizer-left');
@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const resizerWidths = (leftVisible ? 4 : 0) + (rightVisible ? 4 : 0);
         
         // Carica i valori salvati o calcola il valore di default (20% dello schermo)
-        let leftWidth = leftVisible ? parseFloat(localStorage.getItem('sidebar-left-width')) : 0;
-        let rightWidth = rightVisible ? parseFloat(localStorage.getItem('sidebar-right-width')) : 0;
+        let leftWidth = leftVisible ? parseFloat(AppStorage.getItem('sidebar-left-width')) : 0;
+        let rightWidth = rightVisible ? parseFloat(AppStorage.getItem('sidebar-right-width')) : 0;
 
         if (leftVisible && (isNaN(leftWidth) || leftWidth <= 0)) {
             leftWidth = mainWidth * 0.2;
@@ -79,20 +79,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Applica stati di visibilità dei widget in base alle impostazioni
     // Weather e Chat sono disattivati di default, Spotify rimane attivo di default
-    const weatherEnabled = localStorage.getItem('weather_enabled') === 'true';
-    const chatEnabled = localStorage.getItem('chat_enabled') === 'true';
-    const spotifyEnabled = localStorage.getItem('spotify_enabled') !== 'false';
-    const pomodoroEnabled = localStorage.getItem('pomodoro_enabled') === 'true';
-    const countdownEnabled = localStorage.getItem('countdown_enabled') === 'true';
-    const sysmonitorEnabled = localStorage.getItem('sysmonitor_enabled') === 'true';
-    const stocksEnabled = localStorage.getItem('stocks_enabled') === 'true';
-    const converterEnabled = localStorage.getItem('converter_enabled') === 'true';
-    const widgetsActivatedOnce = localStorage.getItem('widgets_activated_once') === 'true';
+    const weatherEnabled = AppStorage.getItem('weather_enabled') === 'true';
+    const chatEnabled = AppStorage.getItem('chat_enabled') === 'true';
+    const spotifyEnabled = AppStorage.getItem('spotify_enabled') !== 'false';
+    const pomodoroEnabled = AppStorage.getItem('pomodoro_enabled') === 'true';
+    const countdownEnabled = AppStorage.getItem('countdown_enabled') === 'true';
+    const sysmonitorEnabled = AppStorage.getItem('sysmonitor_enabled') === 'true';
+    const stocksEnabled = AppStorage.getItem('stocks_enabled') === 'true';
+    const converterEnabled = AppStorage.getItem('converter_enabled') === 'true';
+    const widgetsActivatedOnce = AppStorage.getItem('widgets_activated_once') === 'true';
 
     // Se almeno un widget della colonna sinistra è attivo, aggiorna widgets_activated_once a true
     const anyLeftWidgetEnabled = weatherEnabled || chatEnabled || pomodoroEnabled || countdownEnabled || sysmonitorEnabled || stocksEnabled || converterEnabled;
     if (anyLeftWidgetEnabled && !widgetsActivatedOnce) {
-        localStorage.setItem('widgets_activated_once', 'true');
+        AppStorage.setItem('widgets_activated_once', 'true');
     }
 
     const weatherSection = document.getElementById('weather-section');
@@ -229,10 +229,10 @@ document.addEventListener('DOMContentLoaded', () => {
             section.parentNode.insertBefore(resizer, section.nextSibling);
 
             // Carica l'altezza salvata o usa quella di default
-            let savedHeight = localStorage.getItem(`widget-height-${section.id}`);
+            let savedHeight = AppStorage.getItem(`widget-height-${section.id}`);
             if (section.id === 'pomodoro-section' && savedHeight && parseInt(savedHeight) < 310) {
                 savedHeight = '310px';
-                localStorage.setItem('widget-height-pomodoro-section', '310px');
+                AppStorage.setItem('widget-height-pomodoro-section', '310px');
             }
             const defaultH = defaultHeights[section.id] || '200px';
             section.style.height = savedHeight || defaultH;
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     enableIframePointerEvents();
                     resizer.classList.remove('active');
                     document.body.style.cursor = '';
-                    localStorage.setItem(`widget-height-${section.id}`, section.style.height);
+                    AppStorage.setItem(`widget-height-${section.id}`, section.style.height);
                     document.removeEventListener('mousemove', doDrag);
                     document.removeEventListener('mouseup', stopDrag);
                 };
@@ -270,10 +270,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Imposta l'ultimo widget in modo che si comporti correttamente
         const lastSection = sections[sections.length - 1];
-        let savedHeightLast = localStorage.getItem(`widget-height-${lastSection.id}`);
+        let savedHeightLast = AppStorage.getItem(`widget-height-${lastSection.id}`);
         if (lastSection.id === 'pomodoro-section' && savedHeightLast && parseInt(savedHeightLast) < 310) {
             savedHeightLast = '310px';
-            localStorage.setItem('widget-height-pomodoro-section', '310px');
+            AppStorage.setItem('widget-height-pomodoro-section', '310px');
         }
         const defaultHLast = defaultHeights[lastSection.id] || '200px';
         
@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
             enableIframePointerEvents();
             resizerLeft.classList.remove('active');
             document.body.style.cursor = '';
-            localStorage.setItem('sidebar-left-width', leftSidebar.style.width);
+            AppStorage.setItem('sidebar-left-width', leftSidebar.style.width);
             document.removeEventListener('mousemove', doDrag);
             document.removeEventListener('mouseup', stopDrag);
         };
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
             enableIframePointerEvents();
             resizerRight.classList.remove('active');
             document.body.style.cursor = '';
-            localStorage.setItem('sidebar-right-width', rightSidebar.style.width);
+            AppStorage.setItem('sidebar-right-width', rightSidebar.style.width);
             document.removeEventListener('mousemove', doDrag);
             document.removeEventListener('mouseup', stopDrag);
         };
@@ -377,8 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (todoSidebar && resizerTodo && toggleButton) {
         // Carica la larghezza salvata
-        const savedTodoWidth = localStorage.getItem('todo-sidebar-width');
-        const isCollapsed = todoSidebar.classList.contains('open'); // in To-do.js, "open" significa chiuso/collassato
+        const savedTodoWidth = AppStorage.getItem('todo-sidebar-width');
+        const isCollapsed = todoSidebar.classList.contains('open'); // in todo.js, "open" significa chiuso/collassato
         if (savedTodoWidth && !isCollapsed) {
             todoSidebar.style.width = savedTodoWidth;
         }
@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resizerTodo.classList.remove('active');
                 document.body.style.cursor = '';
                 if (!todoSidebar.classList.contains('open')) {
-                    localStorage.setItem('todo-sidebar-width', todoSidebar.style.width);
+                    AppStorage.setItem('todo-sidebar-width', todoSidebar.style.width);
                 }
                 document.removeEventListener('mousemove', doDrag);
                 document.removeEventListener('mouseup', stopDrag);
@@ -421,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (todoSidebar.classList.contains('open')) {
                 todoSidebar.style.width = ''; // Rimuove larghezza inline per far funzionare il collasso CSS a 28px
             } else {
-                const savedWidth = localStorage.getItem('todo-sidebar-width') || '220px';
+                const savedWidth = AppStorage.getItem('todo-sidebar-width') || '220px';
                 todoSidebar.style.width = savedWidth;
             }
         });

@@ -1,16 +1,16 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Chat.js - Gestore della chat con integrazione avatar e visualizzazione premium
+AppStorage.ready(() => {
+    // chat.js - Gestore della chat con integrazione avatar e visualizzazione premium
 
     function getApiKey() {
-      return (localStorage.getItem("chat_api_key") || localStorage.getItem("gemini_api_key") || "").trim();
+      return (AppStorage.getItem("chat_api_key") || AppStorage.getItem("gemini_api_key") || "").trim();
     }
 
     function getChatEndpoint() {
-      let endpoint = (localStorage.getItem("chat_endpoint") || "").trim();
+      let endpoint = (AppStorage.getItem("chat_endpoint") || "").trim();
       const apiKey = getApiKey();
 
       if (!endpoint || !/^https?:\/\//i.test(endpoint)) {
-        const provider = localStorage.getItem("chat_provider");
+        const provider = AppStorage.getItem("chat_provider");
         const defaultEndpoints = {
           openai: "https://api.openai.com/v1",
           gemini: "https://generativelanguage.googleapis.com/v1beta/openai",
@@ -39,16 +39,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getChatModel() {
-      let custom = (localStorage.getItem("chat_model") || "").trim();
+      let custom = (AppStorage.getItem("chat_model") || "").trim();
       if (custom === "gemini-2.5-flash") {
         custom = "gemini-1.5-flash";
-        try { localStorage.setItem("chat_model", "gemini-1.5-flash"); } catch (e) {}
+        try { AppStorage.setItem("chat_model", "gemini-1.5-flash"); } catch (e) {}
       }
       if (custom) {
         return custom;
       }
 
-      const provider = localStorage.getItem("chat_provider");
+      const provider = AppStorage.getItem("chat_provider");
       const defaultModels = {
         openai: "gpt-4o-mini",
         gemini: "gemini-1.5-flash",
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let chatHistory = [];
     try {
-      const storedHistory = localStorage.getItem("chat_history");
+      const storedHistory = AppStorage.getItem("chat_history");
       if (storedHistory) {
         chatHistory = JSON.parse(storedHistory) || [];
         if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
@@ -93,17 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveChatHistory() {
       try {
         if (chatHistory.length > 40) chatHistory = chatHistory.slice(-40);
-        localStorage.setItem("chat_history", JSON.stringify(chatHistory));
+        AppStorage.setItem("chat_history", JSON.stringify(chatHistory));
       } catch (e) {
         try {
           chatHistory = chatHistory.slice(-20);
-          localStorage.setItem("chat_history", JSON.stringify(chatHistory));
+          AppStorage.setItem("chat_history", JSON.stringify(chatHistory));
         } catch (e2) {}
       }
     }
 
     function getProfileName() {
-      return (localStorage.getItem("profile_name") || "Utente").trim() || "Utente";
+      return (AppStorage.getItem("profile_name") || "Utente").trim() || "Utente";
     }
 
     function getSystemInstruction() {
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const avatar = document.createElement("div");
       avatar.className = `ai-chat-avatar ai-chat-${sender}-avatar`;
       if (sender === "ai") {
-        avatar.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2L14.7 8.3L21 9.6L16.2 14L17.7 20.5L12 17L6.3 20.5L7.8 14L3 9.6L9.3 8.3L12 2Z"></path></svg>`;
+        avatar.innerHTML = window.AppIcons ? window.AppIcons.getSvg('aiAvatar', { width: 14, height: 14 }) : '';
       } else {
         const nm = getProfileName();
         avatar.textContent = (nm.charAt(0) || "U").toUpperCase();
@@ -306,11 +306,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const avatar = document.createElement("div");
       avatar.className = "ai-chat-avatar ai-chat-ai-avatar";
-      avatar.innerHTML = `<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2L14.7 8.3L21 9.6L16.2 14L17.7 20.5L12 17L6.3 20.5L7.8 14L3 9.6L9.3 8.3L12 2Z"></path></svg>`;
+      avatar.innerHTML = window.AppIcons ? window.AppIcons.getSvg('aiAvatar', { width: 14, height: 14 }) : '';
 
       const bubble = document.createElement("div");
       bubble.className = "ai-chat-message-bubble ai-chat-ai-bubble";
-      bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+      const typingIndicator = document.createElement("div");
+      typingIndicator.className = "typing-indicator";
+      for (let i = 0; i < 3; i++) {
+        typingIndicator.appendChild(document.createElement("span"));
+      }
+      bubble.appendChild(typingIndicator);
 
       loadingWrapper.appendChild(avatar);
       loadingWrapper.appendChild(bubble);

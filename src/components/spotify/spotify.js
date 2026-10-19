@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     // Spotify Config Constants
     function getSpotifyRedirectUri() {
         try {
@@ -44,22 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const volumeIcon = document.getElementById("volume-icon");
     const musicPlayerContainer = document.querySelector(".music-player");
 
-    // PKCE Helper: Generate cryptographic random string
-    function generateRandomString(length) {
-        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-        const values = crypto.getRandomValues(new Uint8Array(length));
-        return Array.from(values).map((x) => possible[x % possible.length]).join('');
-    }
+    // Helper PKCE condivisi con Google Calendar (src/shared/pkce.js).
+    const { generateRandomString, generateCodeChallenge } = window.AppPkce;
 
-    // PKCE Helper: Generate challenge from verifier using SHA-256
-    async function generateCodeChallenge(codeVerifier) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(codeVerifier);
-        const digest = await crypto.subtle.digest('SHA-256', data);
-        return btoa(String.fromCharCode(...new Uint8Array(digest)))
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/, '');
+    // Helper per loggare avvisi di rete transitori come warning senza inquinare la dashboard errori di Chrome
+    function logSpotifyError(context, error) {
+        if (!navigator.onLine || error.name === 'AbortError' || (error.message && error.message.includes('fetch'))) {
+            console.warn(`[Spotify] ${context} non riuscito (rete non disponibile o timeout):`, error.message || error);
+        } else {
+            console.error(`[Spotify] ${context}:`, error);
+        }
     }
 
     // Toggle UI display
@@ -76,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Launch Spotify Web Authorization PKCE Flow
     async function loginToSpotify() {
-        const clientId = (localStorage.getItem("spotify_client_id") || "").trim();
+        const clientId = (AppStorage.getItem("spotify_client_id") || "").trim();
         if (!clientId) {
             alert("Configura il tuo Spotify Client ID nelle Impostazioni (icona ⚙️ in alto a destra).");
             return;
@@ -87,8 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const codeVerifier = generateRandomString(64);
-        localStorage.setItem("spotify_code_verifier", codeVerifier);
-
         const codeChallenge = await generateCodeChallenge(codeVerifier);
         const authUrl = `https://accounts.spotify.com/authorize?` + new URLSearchParams({
             client_id: clientId,
@@ -160,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Exchange authorization code for token
     async function exchangeCodeForToken(code, codeVerifier) {
-        const clientId = localStorage.getItem("spotify_client_id") || "";
+        const clientId = AppStorage.getItem("spotify_client_id") || "";
         try {
             const response = await fetch("https://accounts.spotify.com/api/token", {
                 method: "POST",
@@ -192,21 +184,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save tokens to localStorage
     function saveTokens(data) {
-        localStorage.setItem("spotify_access_token", data.access_token);
+        AppStorage.setItem("spotify_access_token", data.access_token);
         if (data.refresh_token) {
-            localStorage.setItem("spotify_refresh_token", data.refresh_token);
+            AppStorage.setItem("spotify_refresh_token", data.refresh_token);
         }
         const expiresAt = Date.now() + (data.expires_in * 1000);
-        localStorage.setItem("spotify_expires_at", expiresAt.toString());
+        AppStorage.setItem("spotify_expires_at", expiresAt.toString());
     }
 
     // Refresh accessToken using refreshToken
     async function refreshAccessToken() {
-        const clientId = localStorage.getItem("spotify_client_id") || "";
-        const refreshToken = localStorage.getItem("spotify_refresh_token");
-        if (!refreshToken || !clientId) return null;
+        const clientId = AppStorage.getItem("spotify_client_id") || "";
+        const refreshToken = AppStorage.getItem("spotify_refresh_token");
+        if (!refreshToken || !clientId || !navigator.onLine) return null;
 
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
             const response = await fetch("https://accounts.spotify.com/api/token", {
                 method: "POST",
                 headers: {
@@ -216,11 +211,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     client_id: clientId,
                     grant_type: "refresh_token",
                     refresh_token: refreshToken
-                })
+                }),
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
-                logoutSpotify();
+                // Esegui il logout solo se Spotify dichiara esplicitamente il token non valido/revocato (400 Bad Request)
+                if (response.status === 400) {
+                    logoutSpotify();
+                } else {
+                    console.warn(`[Spotify] Token refresh fallito: HTTP ${response.status}`);
+                }
                 return null;
             }
 
@@ -228,15 +230,15 @@ document.addEventListener('DOMContentLoaded', () => {
             saveTokens(data);
             return data.access_token;
         } catch (error) {
-            console.error("Error refreshing token:", error);
+            logSpotifyError("Refresh token", error);
             return null;
         }
     }
 
     // Get a valid cached access token or refresh it
     async function getValidAccessToken() {
-        const token = localStorage.getItem("spotify_access_token");
-        const expiresAt = localStorage.getItem("spotify_expires_at");
+        const token = AppStorage.getItem("spotify_access_token");
+        const expiresAt = AppStorage.getItem("spotify_expires_at");
 
         if (!token || !expiresAt) return null;
 
@@ -250,13 +252,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout function
     function logoutSpotify() {
-        localStorage.removeItem("spotify_access_token");
-        localStorage.removeItem("spotify_refresh_token");
-        localStorage.removeItem("spotify_expires_at");
-        localStorage.removeItem("spotify_code_verifier");
-        
+        AppStorage.removeItem("spotify_access_token");
+        AppStorage.removeItem("spotify_refresh_token");
+        AppStorage.removeItem("spotify_expires_at");
+
         clearInterval(progressInterval);
         clearInterval(syncInterval);
+        syncInterval = null;
         
         showDisconnectedUI();
         
@@ -317,6 +319,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update player contents (with throttle control)
     async function updatePlayer(force = false) {
+        // Se siamo offline o la scheda è in background (e non è una chiamata forzata attiva), saltiamo
+        if (!navigator.onLine || (document.hidden && !force)) {
+            return;
+        }
+
         // Prevent spamming the API: limit fetches to once every 3 seconds unless forced
         if (!force && (Date.now() - lastFetchTime < 3000)) {
             return;
@@ -325,16 +332,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const token = await getValidAccessToken();
         if (!token) {
-            showDisconnectedUI();
+            // Mostra UI disconnessa solo se non abbiamo proprio un token salvato (non per offline momentaneo)
+            if (!AppStorage.getItem("spotify_access_token")) {
+                showDisconnectedUI();
+            }
             return;
         }
 
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+
             const response = await fetch("https://api.spotify.com/v1/me/player", {
                 headers: {
                     Authorization: `Bearer ${token}`
-                }
+                },
+                signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             if (response.status === 204 || response.status === 404) {
                 // No active playback
@@ -359,6 +374,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.status === 401) {
                     const newToken = await refreshAccessToken();
                     if (newToken) updatePlayer(true);
+                } else if (response.status === 429) {
+                    const retryAfter = parseInt(response.headers.get("Retry-After"), 10) || 10;
+                    console.warn(`[Spotify] Rate limited (429). Retry after ${retryAfter}s`);
+                    lastFetchTime = Date.now() + (retryAfter * 1000);
+                } else {
+                    console.warn(`[Spotify] Risposta API non riuscita: HTTP ${response.status}`);
                 }
                 return;
             }
@@ -400,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
-            console.error("Error updating Spotify player:", error);
+            logSpotifyError("Aggiornamento player", error);
         }
     }
 
@@ -470,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert("Nessun dispositivo Spotify rilevato. Assicurati che l'app Spotify sia aperta sul tuo cellulare o computer.");
             }
         } catch (error) {
-            console.error("Error resuming playback:", error);
+            logSpotifyError("Ripresa riproduzione", error);
             alert("Errore durante la riproduzione di Spotify.");
         }
     }
@@ -498,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
                 } catch (error) {
-                    console.error("Error in pause:", error);
+                    logSpotifyError("Pausa", error);
                 }
             } else {
                 // Optimistic Play / Resume (smart resume)
@@ -526,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => updatePlayer(true), 1500);
                 }
             } catch (error) {
-                console.error("Error skipping to next:", error);
+                logSpotifyError("Traccia successiva", error);
             }
         });
     }
@@ -550,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => updatePlayer(true), 1500);
                 }
             } catch (error) {
-                console.error("Error skipping to previous:", error);
+                logSpotifyError("Traccia precedente", error);
             }
         });
     }
@@ -581,7 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             } catch (error) {
-                console.error("Error seeking:", error);
+                logSpotifyError("Seek barra avanzamento", error);
             }
         });
     }
@@ -607,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             } catch (error) {
-                console.error("Error setting Spotify volume:", error);
+                logSpotifyError("Impostazione volume", error);
             }
         });
     }
@@ -633,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateVolumeIcon(targetVolume);
                 }
             } catch (error) {
-                console.error("Error toggling Spotify mute:", error);
+                logSpotifyError("Mute/unmute", error);
             }
         });
     }
@@ -649,22 +670,67 @@ document.addEventListener('DOMContentLoaded', () => {
         spotifyConnectBtn.addEventListener("click", loginToSpotify);
     }
 
+    function isSpotifyConnected() {
+        return !!AppStorage.getItem("spotify_access_token") && AppStorage.getItem("spotify_enabled") !== "false";
+    }
+
+    function startSyncPolling() {
+        clearInterval(syncInterval);
+        syncInterval = setInterval(() => {
+            if (!document.hidden && navigator.onLine) {
+                updatePlayer(true);
+            }
+        }, 10000);
+    }
+
+    function stopSyncPolling() {
+        clearInterval(syncInterval);
+        syncInterval = null;
+    }
+
     // Initialize player on load
     async function initPlayer() {
-        if (localStorage.getItem('spotify_enabled') === 'false') {
+        if (AppStorage.getItem('spotify_enabled') === 'false') {
             return;
         }
         const token = await getValidAccessToken();
         if (token) {
             showConnectedUI();
-            updatePlayer(true);
-            // Start polling every 10 seconds to keep in sync
-            clearInterval(syncInterval);
-            syncInterval = setInterval(() => updatePlayer(true), 10000);
+            if (!document.hidden) {
+                updatePlayer(true);
+                startSyncPolling();
+            }
         } else {
-            showDisconnectedUI();
+            if (AppStorage.getItem("spotify_access_token")) {
+                showConnectedUI();
+            } else {
+                showDisconnectedUI();
+            }
         }
     }
+
+    // Gestione visibilità scheda e ricollegamento alla rete
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            stopSyncPolling();
+        } else if (isSpotifyConnected()) {
+            startSyncPolling();
+            if (navigator.onLine) {
+                updatePlayer(true);
+            }
+        }
+    });
+
+    window.addEventListener("online", () => {
+        if (!document.hidden && isSpotifyConnected()) {
+            startSyncPolling();
+            updatePlayer(true);
+        }
+    });
+
+    window.addEventListener("offline", () => {
+        stopSyncPolling();
+    });
 
     // Expose logout function globally so settings modal can invoke it
     window.logoutSpotify = logoutSpotify;

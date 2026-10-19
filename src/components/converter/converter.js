@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+AppStorage.ready(() => {
     // DOM Elements
     const categorySelect = document.getElementById('converter-category');
     const input1 = document.getElementById('converter-val-1');
